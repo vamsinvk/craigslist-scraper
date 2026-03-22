@@ -1,1 +1,38 @@
 
+name: Run Craigslist Scraper
+
+on:
+  workflow_dispatch:   # Manual "Run workflow" button only
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180   # 3 hour max (free tier allows 6hrs)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Run scraper
+        env:
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: python scraper.py
+
+      - name: Upload CSV result
+        uses: actions/upload-artifact@v4
+        if: always()   # Upload even if the job fails midway
+        with:
+          name: craigslist-cars-${{ github.run_id }}
+          path: |
+            craigslist_cars.csv
+            craper.log
+          retention-days: 7
