@@ -1,0 +1,101 @@
+name: Run Facebook Marketplace Scraper
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 11 * * *'    # 7:00 AM EDT
+    - cron: '30 21 * * *'   # 5:30 PM EDT
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install apify-client
+
+      - name: Set run date
+        run: |
+          echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "RUN_TIME=$(TZ='America/New_York' date +'%I:%M %p EDT')" >> $GITHUB_ENV
+
+      - name: Notify start
+        run: |
+          python - <<'EOF'
+          import urllib.request, urllib.parse
+          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          msg = (
+            "🚀 Facebook Scraper Started\n"
+            "📅 Date: ${{ env.RUN_DATE }}\n"
+            "⏰ Time: ${{ env.RUN_TIME }}\n"
+            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          )
+          if token and chat_id:
+            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
+          EOF
+
+      - name: Run Facebook scraper
+        env:
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+        run: python fb_scraper.py
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: facebook-${{ env.RUN_DATE }}
+          path: |
+            FSBO/DATA/Facebook/CSV/
+            FSBO/DATA/Facebook/JSON/
+          retention-days: 90
+
+      - name: Notify success
+        if: success()
+        run: |
+          python - <<'EOF'
+          import urllib.request, urllib.parse, os
+          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          f = "FSBO/DATA/Facebook/CSV/edison_processed_final_database.csv"
+          rows = sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0
+          msg = (
+            "✅ Facebook Scraper Done!\n"
+            "📅 Date: ${{ env.RUN_DATE }}\n"
+            "⏰ Finished: ${{ env.RUN_TIME }}\n"
+            f"🚗 Total listings in DB: {rows}\n"
+            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          )
+          if token and chat_id:
+            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
+          EOF
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          python - <<'EOF'
+          import urllib.request, urllib.parse
+          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          msg = (
+            "❌ Facebook Scraper FAILED!\n"
+            "📅 Date: ${{ env.RUN_DATE }}\n"
+            "⏰ Time: ${{ env.RUN_TIME }}\n"
+            "⚠️ Check logs!\n"
+            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          )
+          if token and chat_id:
+            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
+          EOF
