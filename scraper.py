@@ -6,6 +6,7 @@
 # - listing_type: owner vs dealer
 # - Smart 403 detection (expired vs real block)
 # - Checkpoint + retry on failure
+# - Date-partitioned output: FSBO/Craigslist/DATA/YYYY-MM-DD/CSV|JSON
 # ============================================================
 
 import requests
@@ -17,12 +18,25 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ─────────────────────────────────────────────────────────────
+# DATE-PARTITIONED PATHS
+# ─────────────────────────────────────────────────────────────
+RUN_DATE   = os.environ.get("RUN_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
+BASE_DIR   = os.path.join("FSBO", "Craigslist", "DATA", RUN_DATE)
+CSV_DIR    = os.path.join(BASE_DIR, "CSV")
+JSON_DIR   = os.path.join(BASE_DIR, "JSON")
+
+os.makedirs(CSV_DIR,  exist_ok=True)
+os.makedirs(JSON_DIR, exist_ok=True)
+
+# ─────────────────────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────────────────────
 CONFIG = {
     "BASE_URL":           "https://cnj.craigslist.org/search/edison-nj/cta?lat=40.5385&lon=-74.3959&postedToday=1&search_distance=90",
-    "OUTPUT_CSV":         "craigslist_cars.csv",
-    "CHECKPOINT_FILE":    "checkpoint.json",
+    "OUTPUT_CSV":         os.path.join(CSV_DIR,  "craigslist_cars.csv"),
+    "OUTPUT_JSON":        os.path.join(JSON_DIR, "craigslist_cars.json"),
+    "CHECKPOINT_FILE":    os.path.join(BASE_DIR, "checkpoint.json"),
+    "LOG_FILE":           os.path.join(BASE_DIR, "craper.log"),
     "DELAY_MIN":          2.0,
     "DELAY_MAX":          3.5,
     "PAGE_DELAY":         1.2,
@@ -48,14 +62,11 @@ IRRELEVANT_DOMAINS = {
 # ─────────────────────────────────────────────────────────────
 # LOGGING
 # ─────────────────────────────────────────────────────────────
-#os.makedirs(os.path.dirname(CONFIG["OUTPUT_CSV"]),      exist_ok=True)
-#os.makedirs(os.path.dirname(CONFIG["CHECKPOINT_FILE"]), exist_ok=True)
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("craper.log", encoding="utf-8"),
+        logging.FileHandler(CONFIG["LOG_FILE"], encoding="utf-8"),
         logging.StreamHandler(sys.stdout),
     ],
 )
@@ -90,16 +101,22 @@ def get_headers(referer=None):
     }
 
 # ─────────────────────────────────────────────────────────────
-# THREAD-LOCAL SESSIONS — each domain worker gets its own
-# isolated session so cookies never cross-contaminate
+# THREAD-LOCAL SESSIONS
 # ─────────────────────────────────────────────────────────────
 _thread_local   = threading.local()
 _primed_domains = set()
 _prime_lock     = threading.Lock()
 
+PROXY_URL = os.environ.get("PROXY_URL", "")
+
 def get_session():
     if not hasattr(_thread_local, "session"):
         _thread_local.session = requests.Session()
+        if PROXY_URL:
+            _thread_local.session.proxies.update({
+                "http":  PROXY_URL,
+                "https": PROXY_URL,
+            })
     return _thread_local.session
 
 # ─────────────────────────────────────────────────────────────
@@ -116,7 +133,6 @@ def pid_from_url(url):
     return m.group(1) if m else ""
 
 def extract_sub_area(url):
-    """Extract sub-area slug like brk, lgi, wch, que, brx, stn etc."""
     m = re.match(r'https?://[^/]+/([a-z]{2,5})/', url or "")
     if m:
         area = m.group(1)
@@ -141,28 +157,38 @@ def prime_domain(url, session=None):
     except:
         return
 
+    # Check inside lock but do HTTP outside to avoid blocking all threads
     with _prime_lock:
-        if root not in _primed_domains:
-            try:
-                session.get(root, headers=get_headers(), timeout=8)
-                _primed_domains.add(root)
-                log.info(f"Primed root: {root}")
-            except Exception as e:
-                log.warning(f"Prime failed {root}: {e}")
+        need_root = root not in _primed_domains
+        if need_root:
+            _primed_domains.add(root)
+        need_sub = sub_url and sub_url not in _primed_domains
+        if need_sub:
+            _primed_domains.add(sub_url)
 
-        if sub_url and sub_url not in _primed_domains:
-            try:
-                time.sleep(0.3)
-                session.get(sub_url, headers=get_headers(referer=root), timeout=8)
-                _primed_domains.add(sub_url)
-                log.info(f"Primed sub-area: {sub_url}")
-            except Exception as e:
-                log.warning(f"Sub-area prime failed {sub_url}: {e}")
+    if need_root:
+        try:
+            session.get(root, headers=get_headers(), timeout=8)
+            log.info(f"Primed root: {root}")
+        except Exception as e:
+            log.warning(f"Prime failed {root}: {e}")
+            with _prime_lock:
+                _primed_domains.discard(root)
+
+    if need_sub:
+        try:
+            time.sleep(0.3)
+            session.get(sub_url, headers=get_headers(referer=root), timeout=8)
+            log.info(f"Primed sub-area: {sub_url}")
+        except Exception as e:
+            log.warning(f"Sub-area prime failed {sub_url}: {e}")
+            with _prime_lock:
+                _primed_domains.discard(sub_url)
 
 # ─────────────────────────────────────────────────────────────
-# SAFE GET — thread-local session, correct sub-area referer
+# SAFE GET
 # ─────────────────────────────────────────────────────────────
-def safe_get(url, use_main_session=False):
+def safe_get(url):
     session  = get_session()
     parsed   = urlparse(url)
     root     = f"{parsed.scheme}://{parsed.netloc}/"
@@ -194,22 +220,18 @@ def safe_get(url, use_main_session=False):
     return None
 
 # ─────────────────────────────────────────────────────────────
-# DOMAIN PROBE — tells us if 403 is rate-limit vs expired listing
+# DOMAIN PROBE
 # ─────────────────────────────────────────────────────────────
 def probe_domain(domain):
     session = get_session()
     try:
-        resp = session.get(
-            f"https://{domain}/",
-            headers=get_headers(),
-            timeout=8
-        )
+        resp = session.get(f"https://{domain}/", headers=get_headers(), timeout=8)
         return resp.status_code == 200
     except:
         return False
 
 # ─────────────────────────────────────────────────────────────
-# PHASE 1 — Collect stub URLs from search result pages
+# PHASE 1 — Collect stub URLs from search pages
 # ─────────────────────────────────────────────────────────────
 def scrape_search_stubs():
     stubs     = []
@@ -217,7 +239,6 @@ def scrape_search_stubs():
     start     = 0
     total     = 9999
 
-    # Use main session for search pages (single-threaded phase)
     main_session = get_session()
     prime_domain(CONFIG["BASE_URL"], main_session)
 
@@ -251,8 +272,6 @@ def scrape_search_stubs():
                 continue
 
             listing_domain = get_domain(listing_url)
-
-            # Skip irrelevant national domains
             if listing_domain in IRRELEVANT_DOMAINS:
                 continue
 
@@ -262,28 +281,21 @@ def scrape_search_stubs():
             seen_pids.add(pid)
             new += 1
 
-            # Title
             title = card.get("title", "").strip()
             if not title:
-                el    = card.select_one(".title")
+                el    = card.select_one("a.posting-title, .title")
                 title = el.get_text(strip=True) if el else a.get_text(strip=True)
 
-            # Price
-            price = ""
-            el = card.select_one(".price")
-            if el:
-                price = el.get_text(strip=True)
+            price_el    = card.select_one(".priceinfo") or card.select_one(".price")
+            price       = price_el.get_text(strip=True) if price_el else ""
 
-            # Location
-            location = ""
-            el = card.select_one(".location")
-            if el:
-                location = el.get_text(strip=True)
+            location_el = card.select_one(".supertitle") or card.select_one(".location")
+            location    = location_el.get_text(strip=True) if location_el else ""
 
-            # Owner vs Dealer
             listing_type = "dealer" if "/ctd/" in listing_url else "owner"
 
             stubs.append({
+                "run_date":     RUN_DATE,
                 "pid":          pid,
                 "url":          listing_url,
                 "title":        title,
@@ -342,6 +354,7 @@ def parse_attrs_html(soup):
                 i += 1
     return attrs
 
+
 def scrape_detail(stub):
     url  = stub.get("url", "")
     resp = safe_get(url)
@@ -350,37 +363,40 @@ def scrape_detail(stub):
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
-    # Description
     desc_el = soup.select_one("#postingbody")
     if desc_el:
         for tag in desc_el.select(".print-qrcode-label, .qrcode-container"):
             tag.decompose()
     description = desc_el.get_text(separator=" ", strip=True) if desc_el else ""
 
-    # Timestamps
     time_tags    = soup.select("time[datetime]")
     posted_time  = time_tags[0].get("datetime", "") if len(time_tags) > 0 else ""
     updated_time = time_tags[1].get("datetime", "") if len(time_tags) > 1 else ""
 
-    # GPS
     lat, lon = "", ""
     map_el = soup.select_one("#map")
     if map_el:
         lat = map_el.get("data-latitude",  "")
         lon = map_el.get("data-longitude", "")
 
-    # Images
     images = [a.get("href", "") for a in soup.select("#thumbs a") if a.get("href")]
     if not images:
         images = [img.get("src", "") for img in soup.select(".slide img[src]")]
 
-    # Post ID
     post_id = stub.get("pid", "")
     for info in soup.select(".postinginfos .postinginfo"):
         t = info.get_text(strip=True)
         if "post id" in t.lower():
             post_id = re.sub(r"[^\d]", "", t)
             break
+
+    # Safe merge: parsed attrs never overwrite core stub fields
+    core_keys = {"run_date", "pid", "url", "title", "price", "location", "domain", "listing_type"}
+    raw_attrs = parse_attrs_html(soup)
+    safe_attrs = {
+        (f"attr_{k}" if k in core_keys else k): v
+        for k, v in raw_attrs.items()
+    }
 
     return {
         **stub,
@@ -392,7 +408,7 @@ def scrape_detail(stub):
         "description":  description,
         "image_count":  len(images),
         "image_urls":   " | ".join(images),
-        **parse_attrs_html(soup),
+        **safe_attrs,
     }
 
 # ─────────────────────────────────────────────────────────────
@@ -402,9 +418,10 @@ results_lock = threading.Lock()
 all_results  = []
 done_count   = 0
 
+
 def scrape_domain_batch(domain, stubs, total_all):
     global done_count
-    consecutive_403  = 0
+    consecutive_403 = 0
 
     for i, stub in enumerate(stubs):
         detail = scrape_detail(stub)
@@ -413,24 +430,14 @@ def scrape_domain_batch(domain, stubs, total_all):
         if failed:
             consecutive_403 += 1
             if consecutive_403 >= CONFIG["STORM_THRESHOLD"]:
-                # Probe to distinguish expired listing vs real rate-limit
                 domain_alive = probe_domain(domain)
                 if domain_alive:
-                    # Domain is up → these are just deleted/expired listings
-                    log.info(
-                        f"  >> [{domain}] {consecutive_403}x 403 but domain is UP "
-                        f"→ listings expired/deleted. Continuing."
-                    )
+                    log.info(f"  >> [{domain}] {consecutive_403}x 403 but domain UP → listings expired.")
                     consecutive_403 = 0
                 else:
-                    # Domain blocking us → real rate limit
-                    log.warning(
-                        f"  >> [{domain}] REAL rate limit — "
-                        f"cooling down {CONFIG['COOLDOWN_SECONDS']}s..."
-                    )
+                    log.warning(f"  >> [{domain}] REAL rate limit — cooling {CONFIG['COOLDOWN_SECONDS']}s...")
                     time.sleep(CONFIG["COOLDOWN_SECONDS"])
                     consecutive_403 = 0
-                    # Retry after cooldown
                     detail = scrape_detail(stub)
                     failed = "error" in detail
                     if not failed:
@@ -438,21 +445,26 @@ def scrape_domain_batch(domain, stubs, total_all):
         else:
             consecutive_403 = 0
 
+        # Snapshot data outside lock to avoid blocking threads during disk I/O
         with results_lock:
             all_results.append(detail)
             done_count += 1
-            current = done_count
-            status  = "✓" if not failed else "✗ expired"
+            current     = done_count
+            status      = "✓" if not failed else "✗ expired"
             log.info(
                 f"[{current}/{total_all}] {status} [{domain}] "
                 f"[{stub.get('listing_type','?')}] "
                 f"{stub['title']} — {stub['price']}"
             )
-            if current % 25 == 0:
-                good = [r for r in all_results if "error" not in r]
-                save_checkpoint(all_results)
-                save_csv(good)
-                log.info(f"  >> Checkpoint {current}/{total_all} | Clean: {len(good)}")
+            should_save = current % 25 == 0
+            snapshot    = list(all_results) if should_save else None
+
+        if should_save and snapshot:
+            good = [r for r in snapshot if "error" not in r]
+            save_checkpoint(snapshot)
+            save_csv(good)
+            save_json(good)
+            log.info(f"  >> Checkpoint {current}/{total_all} | Clean: {len(good)}")
 
         delay = random.uniform(CONFIG["DELAY_MIN"], CONFIG["DELAY_MAX"])
         if (i + 1) % 10 == 0:
@@ -470,11 +482,11 @@ def scrape_domain_parallel(stubs):
     for stub in stubs:
         domain_groups[stub["domain"]].append(stub)
 
-    total      = len(stubs)
+    total       = len(stubs)
     num_workers = min(len(domain_groups), CONFIG["MAX_DOMAIN_WORKERS"])
-    avg_delay  = (CONFIG["DELAY_MIN"] + CONFIG["DELAY_MAX"]) / 2
-    max_batch  = max(len(v) for v in domain_groups.values())
-    est_secs   = max_batch * avg_delay
+    avg_delay   = (CONFIG["DELAY_MIN"] + CONFIG["DELAY_MAX"]) / 2
+    max_batch   = max(len(v) for v in domain_groups.values())
+    est_secs    = max_batch * avg_delay
 
     log.info(f"Domains: {list(domain_groups.keys())}")
     log.info(f"Workers: {num_workers} | Longest domain: {max_batch} listings")
@@ -494,23 +506,26 @@ def scrape_domain_parallel(stubs):
                 log.error(f"  >> Domain error [{domain}]: {e}")
 
 # ─────────────────────────────────────────────────────────────
-# CHECKPOINT + CSV
+# CHECKPOINT + CSV + JSON
 # ─────────────────────────────────────────────────────────────
 def load_checkpoint():
     if os.path.exists(CONFIG["CHECKPOINT_FILE"]):
         with open(CONFIG["CHECKPOINT_FILE"], "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Backfill listing_type on old checkpoint rows
             for r in data:
                 if "listing_type" not in r:
                     r["listing_type"] = "dealer" if "/ctd/" in r.get("url", "") else "owner"
+                if "run_date" not in r:
+                    r["run_date"] = RUN_DATE
             log.info(f"Checkpoint loaded: {len(data)} rows.")
             return data
     return []
 
+
 def save_checkpoint(data):
     with open(CONFIG["CHECKPOINT_FILE"], "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
 
 def save_csv(data):
     if not data:
@@ -527,6 +542,15 @@ def save_csv(data):
         writer.writerows(data)
     log.info(f"CSV saved: {CONFIG['OUTPUT_CSV']} ({len(data)} rows)")
 
+
+def save_json(data):
+    if not data:
+        return
+    with open(CONFIG["OUTPUT_JSON"], "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    log.info(f"JSON saved: {CONFIG['OUTPUT_JSON']} ({len(data)} rows)")
+
+
 # ─────────────────────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────────────────────
@@ -534,27 +558,26 @@ if __name__ == "__main__":
     start_time = datetime.now()
     log.info("=" * 60)
     log.info("Craigslist Scraper — Domain-Parallel | Final Version")
-    log.info(f"URL   : {CONFIG['BASE_URL']}")
-    log.info(f"Start : {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    log.info(f"Run Date : {RUN_DATE}")
+    log.info(f"CSV      : {CONFIG['OUTPUT_CSV']}")
+    log.info(f"JSON     : {CONFIG['OUTPUT_JSON']}")
+    log.info(f"Start    : {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     log.info("=" * 60)
 
-    # Load checkpoint
     completed      = load_checkpoint()
     completed_pids = {r["pid"] for r in completed}
     all_results.extend(completed)
     done_count = len(completed)
 
-    # Phase 1 — collect stubs
     log.info("PHASE 1: Collecting listing URLs from search pages...")
     stubs     = scrape_search_stubs()
     remaining = [s for s in stubs if s["pid"] not in completed_pids]
     log.info(f"Total: {len(stubs)} | Already done: {len(completed)} | Remaining: {len(remaining)}")
 
-    # Phase 2 — domain-parallel detail scraping
     log.info("PHASE 2: Domain-parallel detail scraping...")
     scrape_domain_parallel(remaining)
 
-    # Retry all failed listings once after full run
+    # Retry all failed listings once
     failed_stubs = [r for r in all_results if "error" in r]
     if failed_stubs:
         log.info(f"Retrying {len(failed_stubs)} failed listings after 60s cooldown...")
@@ -577,14 +600,17 @@ if __name__ == "__main__":
 
     save_checkpoint(all_results)
     save_csv(good)
+    save_json(good)
 
     elapsed = datetime.now() - start_time
     log.info("=" * 60)
     log.info(f"DONE in {elapsed}")
+    log.info(f"  Run Date         : {RUN_DATE}")
     log.info(f"  Total attempted  : {len(all_results)}")
-    log.info(f"  ✓ Saved to CSV   : {len(good)}")
-    log.info(f"      → Owner       : {len(owners)}")
-    log.info(f"      → Dealer      : {len(dealers)}")
+    log.info(f"  ✓ Saved          : {len(good)}")
+    log.info(f"      → Owner      : {len(owners)}")
+    log.info(f"      → Dealer     : {len(dealers)}")
     log.info(f"  ✗ Expired/gone   : {len(expired)}")
-    log.info(f"  Output           : {CONFIG['OUTPUT_CSV']}")
+    log.info(f"  CSV              : {CONFIG['OUTPUT_CSV']}")
+    log.info(f"  JSON             : {CONFIG['OUTPUT_JSON']}")
     log.info("=" * 60)
