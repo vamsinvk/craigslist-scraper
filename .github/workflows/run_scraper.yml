@@ -1,13 +1,14 @@
-
 name: Run Craigslist Scraper
 
 on:
-  workflow_dispatch:   # Manual "Run workflow" button only
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'   # Daily 7:00 AM UTC = 3:00 AM EDT
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 180   # 3 hour max (free tier allows 6hrs)
+    timeout-minutes: 180
 
     steps:
       - name: Checkout code
@@ -19,20 +20,24 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4
+
+      - name: Set run date
+        run: echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Run scraper
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
+          RUN_DATE: ${{ env.RUN_DATE }}
         run: python scraper.py
 
-      - name: Upload CSV result
+      - name: Upload results
         uses: actions/upload-artifact@v4
-        if: always()   # Upload even if the job fails midway
+        if: always()
         with:
-          name: craigslist-cars-${{ github.run_id }}
+          name: craigslist-${{ env.RUN_DATE }}
           path: |
-            craigslist_cars.csv
-            craper.log
-          retention-days: 7
+            FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/
+            FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/JSON/
+            FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/craper.log
+          retention-days: 90
