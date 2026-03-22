@@ -11,7 +11,7 @@ if not APIFY_API_TOKEN:
     raise ValueError("APIFY_API_TOKEN environment variable not set!")
 
 # Define your exact folder architecture
-BASE_DATA_DIR = r"/FSBO/DATA/Facebook"
+BASE_DATA_DIR = os.path.join("FSBO", "DATA", "Facebook")
 JSON_DIR = os.path.join(BASE_DATA_DIR, "JSON")
 CSV_DIR = os.path.join(BASE_DATA_DIR, "CSV")
 
