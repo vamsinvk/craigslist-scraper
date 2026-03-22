@@ -3,8 +3,8 @@ name: Run Craigslist Scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 11 * * *'    # 7:00 AM EDT (UTC-4) = 11:00 UTC
-    - cron: '35 21 * * *'   # 5:35 PM EDT (UTC-4) = 21:35 UTC
+    - cron: '0 11 * * *'    # 7:00 AM EDT = 11:00 UTC
+    - cron: '45 21 * * *'   # 5:45 PM EDT = 21:45 UTC
 
 jobs:
   scrape:
@@ -23,34 +23,39 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Set run date and time
+      - name: Set run date
         run: |
           echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
           echo "RUN_TIME=$(TZ='America/New_York' date +'%I:%M %p EDT')" >> $GITHUB_ENV
 
       - name: Notify start
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="🚀 <b>Craigslist Scraper Started</b>
-          📅 Date: ${{ env.RUN_DATE }}
-          ⏰ Time: ${{ env.RUN_TIME }}
-          🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          python - <<'EOF'
+          import urllib.request, urllib.parse, os
+          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          msg = (
+            "🚀 Craigslist Scraper Started\n"
+            "📅 Date: ${{ env.RUN_DATE }}\n"
+            "⏰ Time: ${{ env.RUN_TIME }}\n"
+            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          )
+          if token and chat_id:
+            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
+          EOF
 
       - name: Run scraper
-        id: scraper
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
-          RUN_DATE: ${{ env.RUN_DATE }}
+          RUN_DATE:  ${{ env.RUN_DATE }}
         run: python scraper.py
 
       - name: Upload results
-        id: upload
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: craigslist-${{ env.RUN_DATE }}-${{ env.RUN_TIME }}
+          name: craigslist-${{ env.RUN_DATE }}
           path: |
             FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/
             FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/JSON/
@@ -60,30 +65,40 @@ jobs:
       - name: Notify success
         if: success()
         run: |
-          # Count rows in CSV
-          ROWS=$(python -c "
-          import csv, os
-          f = 'FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/craigslist_cars.csv'
-          print(sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0)
-          ")
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="✅ <b>Scraper Completed Successfully</b>
-          📅 Date: ${{ env.RUN_DATE }}
-          ⏰ Finished: ${{ env.RUN_TIME }}
-          🚗 Listings saved: <b>${ROWS}</b>
-          📄 CSV + JSON ready in Artifacts
-          🔗 Download: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          python - <<'EOF'
+          import urllib.request, urllib.parse, csv, os
+          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          f = "FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/craigslist_cars.csv"
+          rows = sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0
+          msg = (
+            "✅ Scraper Completed!\n"
+            "📅 Date: ${{ env.RUN_DATE }}\n"
+            "⏰ Finished: ${{ env.RUN_TIME }}\n"
+            f"🚗 Listings saved: {rows}\n"
+            "📄 CSV + JSON in Artifacts\n"
+            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          )
+          if token and chat_id:
+            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
+          EOF
 
       - name: Notify failure
         if: failure()
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="❌ <b>Scraper FAILED</b>
-          📅 Date: ${{ env.RUN_DATE }}
-          ⏰ Time: ${{ env.RUN_TIME }}
-          ⚠️ Check logs for details
-          🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          python - <<'EOF'
+          import urllib.request, urllib.parse
+          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          msg = (
+            "❌ Scraper FAILED!\n"
+            "📅 Date: ${{ env.RUN_DATE }}\n"
+            "⏰ Time: ${{ env.RUN_TIME }}\n"
+            "⚠️ Check logs for details\n"
+            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          )
+          if token and chat_id:
+            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
+          EOF
