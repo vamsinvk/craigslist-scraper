@@ -3,13 +3,17 @@ name: Run Craigslist Scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 11 * * *'    # 7:00 AM EDT = 11:00 UTC
-    - cron: '55 21 * * *'   # 5:55 PM EDT = 21:55 UTC
+    - cron: '0 11 * * *'
+    - cron: '30 21 * * *'
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+
+    # ✅ Required permission to push data back to repo
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -31,7 +35,7 @@ jobs:
       - name: Notify start
         run: |
           python - <<'EOF'
-          import urllib.request, urllib.parse, os
+          import urllib.request, urllib.parse
           token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
           chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
           msg = (
@@ -51,7 +55,16 @@ jobs:
           RUN_DATE:  ${{ env.RUN_DATE }}
         run: python scraper.py
 
-      - name: Upload results
+      - name: Commit data to repo
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add FSBO/
+          git diff --staged --quiet || git commit -m "data: Craigslist ${{ env.RUN_DATE }} ${{ env.RUN_TIME }}"
+          git push
+
+      - name: Upload artifact backup
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -66,17 +79,17 @@ jobs:
         if: success()
         run: |
           python - <<'EOF'
-          import urllib.request, urllib.parse, csv, os
+          import urllib.request, urllib.parse, os
           token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
           chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
           f = "FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/craigslist_cars.csv"
           rows = sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0
           msg = (
-            "✅ Scraper Completed!\n"
+            "✅ Craigslist Scraper Done!\n"
             "📅 Date: ${{ env.RUN_DATE }}\n"
             "⏰ Finished: ${{ env.RUN_TIME }}\n"
             f"🚗 Listings saved: {rows}\n"
-            "📄 CSV + JSON in Artifacts\n"
+            "📂 Data committed to GitHub repo\n"
             "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           )
           if token and chat_id:
@@ -92,10 +105,10 @@ jobs:
           token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
           chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
           msg = (
-            "❌ Scraper FAILED!\n"
+            "❌ Craigslist Scraper FAILED!\n"
             "📅 Date: ${{ env.RUN_DATE }}\n"
             "⏰ Time: ${{ env.RUN_TIME }}\n"
-            "⚠️ Check logs for details\n"
+            "⚠️ Check logs!\n"
             "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           )
           if token and chat_id:
