@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 11 * * *'    # 7:00 AM EDT = 11:00 UTC
-    - cron: '45 21 * * *'   # 5:45 PM EDT = 21:45 UTC
+    - cron: '55 21 * * *'   # 5:55 PM EDT = 21:55 UTC
 
 jobs:
   scrape:
