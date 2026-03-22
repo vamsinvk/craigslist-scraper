@@ -3,13 +3,15 @@ name: Run Facebook Marketplace Scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 11 * * *'    # 7:00 AM EDT
-    - cron: '30 21 * * *'   # 5:30 PM EDT
+    - cron: '0 11 * * *'    # 7:00 AM EDT = 11:00 UTC
+    - cron: '30 21 * * *'   # 5:30 PM EDT = 21:30 UTC
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -48,16 +50,26 @@ jobs:
       - name: Run Facebook scraper
         env:
           APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+          RUN_DATE:        ${{ env.RUN_DATE }}
         run: python fb_scraper.py
 
-      - name: Upload results
+      - name: Commit data to repo
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add FSBO/
+          git diff --staged --quiet || git commit -m "data: Facebook ${{ env.RUN_DATE }} ${{ env.RUN_TIME }}"
+          git push
+
+      - name: Upload artifact backup
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: facebook-${{ env.RUN_DATE }}
           path: |
-            FSBO/DATA/Facebook/CSV/
-            FSBO/DATA/Facebook/JSON/
+            FSBO/Facebook/DATA/${{ env.RUN_DATE }}/CSV/
+            FSBO/Facebook/DATA/${{ env.RUN_DATE }}/JSON/
           retention-days: 90
 
       - name: Notify success
@@ -67,13 +79,14 @@ jobs:
           import urllib.request, urllib.parse, os
           token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
           chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
-          f = "FSBO/DATA/Facebook/CSV/edison_processed_final_database.csv"
+          f = "FSBO/Facebook/DATA/${{ env.RUN_DATE }}/CSV/edison_processed_final_database.csv"
           rows = sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0
           msg = (
             "✅ Facebook Scraper Done!\n"
             "📅 Date: ${{ env.RUN_DATE }}\n"
             "⏰ Finished: ${{ env.RUN_TIME }}\n"
             f"🚗 Total listings in DB: {rows}\n"
+            "📂 Data committed to GitHub repo\n"
             "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           )
           if token and chat_id:
