@@ -3,7 +3,8 @@ name: Run Craigslist Scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 7 * * *'   # Daily 7:00 AM UTC = 3:00 AM EDT
+    - cron: '0 11 * * *'    # 7:00 AM EDT (UTC-4) = 11:00 UTC
+    - cron: '30 21 * * *'   # 5:30 PM EDT (UTC-4) = 21:30 UTC
 
 jobs:
   scrape:
@@ -22,22 +23,67 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Set run date
-        run: echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
+      - name: Set run date and time
+        run: |
+          echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "RUN_TIME=$(TZ='America/New_York' date +'%I:%M %p EDT')" >> $GITHUB_ENV
+
+      - name: Notify start
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="🚀 <b>Craigslist Scraper Started</b>
+          📅 Date: ${{ env.RUN_DATE }}
+          ⏰ Time: ${{ env.RUN_TIME }}
+          🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Run scraper
+        id: scraper
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           RUN_DATE: ${{ env.RUN_DATE }}
         run: python scraper.py
 
       - name: Upload results
+        id: upload
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: craigslist-${{ env.RUN_DATE }}
+          name: craigslist-${{ env.RUN_DATE }}-${{ env.RUN_TIME }}
           path: |
             FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/
             FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/JSON/
             FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/craper.log
           retention-days: 90
+
+      - name: Notify success
+        if: success()
+        run: |
+          # Count rows in CSV
+          ROWS=$(python -c "
+          import csv, os
+          f = 'FSBO/Craigslist/DATA/${{ env.RUN_DATE }}/CSV/craigslist_cars.csv'
+          print(sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0)
+          ")
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="✅ <b>Scraper Completed Successfully</b>
+          📅 Date: ${{ env.RUN_DATE }}
+          ⏰ Finished: ${{ env.RUN_TIME }}
+          🚗 Listings saved: <b>${ROWS}</b>
+          📄 CSV + JSON ready in Artifacts
+          🔗 Download: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="❌ <b>Scraper FAILED</b>
+          📅 Date: ${{ env.RUN_DATE }}
+          ⏰ Time: ${{ env.RUN_TIME }}
+          ⚠️ Check logs for details
+          🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
