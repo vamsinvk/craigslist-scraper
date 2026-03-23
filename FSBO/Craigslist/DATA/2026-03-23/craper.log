@@ -1,0 +1,406 @@
+2026-03-23 04:08:44,632 [INFO] ============================================================
+2026-03-23 04:08:44,632 [INFO] Craigslist Scraper — Domain-Parallel | Final Version
+2026-03-23 04:08:44,632 [INFO] Run Date : 2026-03-23
+2026-03-23 04:08:44,632 [INFO] CSV      : FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv
+2026-03-23 04:08:44,632 [INFO] JSON     : FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json
+2026-03-23 04:08:44,632 [INFO] Start    : 2026-03-23 04:08:44
+2026-03-23 04:08:44,632 [INFO] ============================================================
+2026-03-23 04:08:44,632 [INFO] PHASE 1: Collecting listing URLs from search pages...
+2026-03-23 04:08:44,982 [INFO] Primed root: https://cnj.craigslist.org/
+2026-03-23 04:08:44,982 [INFO] [Search] s=0
+2026-03-23 04:08:45,296 [INFO]   s=0 | 281 new | Total stubs: 281
+2026-03-23 04:08:47,068 [INFO] [Search] s=120
+2026-03-23 04:08:47,190 [INFO]   s=120 | 0 new | Total stubs: 281
+2026-03-23 04:08:47,190 [INFO] Total: 281 | Already done: 0 | Remaining: 281
+2026-03-23 04:08:47,190 [INFO] PHASE 2: Domain-parallel detail scraping...
+2026-03-23 04:08:47,190 [INFO] Domains: ['newyork.craigslist.org', 'hudsonvalley.craigslist.org', 'philadelphia.craigslist.org', 'allentown.craigslist.org', 'longisland.craigslist.org', 'southjersey.craigslist.org', 'cnj.craigslist.org', 'newjersey.craigslist.org', 'newhaven.craigslist.org', 'scranton.craigslist.org', 'jerseyshore.craigslist.org', 'delaware.craigslist.org', 'catskills.craigslist.org', 'hartford.craigslist.org', 'reading.craigslist.org']
+2026-03-23 04:08:47,190 [INFO] Workers: 8 | Longest domain: 91 listings
+2026-03-23 04:08:47,190 [INFO] Estimated time: ~4.2 min
+2026-03-23 04:08:47,272 [INFO] Primed root: https://southjersey.craigslist.org/
+2026-03-23 04:08:47,281 [INFO] Primed root: https://philadelphia.craigslist.org/
+2026-03-23 04:08:47,316 [INFO] [1/281] ✓ [cnj.craigslist.org] [dealer] 2003 Toyota RAV4 Base Fwd 4dr SUV — $2,995
+2026-03-23 04:08:47,349 [INFO] [2/281] ✓ [philadelphia.craigslist.org] [owner] ** 2003 CADILLAC SEVILLE DTS - 8cyl. AUTO ** — $4,500
+2026-03-23 04:08:47,364 [INFO] [3/281] ✓ [southjersey.craigslist.org] [dealer] 2008 Mercedes-Benz M Class ML 350 Edition 10 AWD 4MATIC 4dr SUV — $3,995
+2026-03-23 04:08:47,366 [INFO] Primed root: https://newyork.craigslist.org/
+2026-03-23 04:08:47,374 [INFO] Primed root: https://allentown.craigslist.org/
+2026-03-23 04:08:47,381 [INFO] Primed root: https://longisland.craigslist.org/
+2026-03-23 04:08:47,410 [INFO] [4/281] ✓ [allentown.craigslist.org] [owner] 2014 jetta se — $6,450
+2026-03-23 04:08:47,432 [INFO] [5/281] ✓ [longisland.craigslist.org] [dealer] 2017 Hyundai Elantra  SE — $6,900
+2026-03-23 04:08:47,433 [INFO] Primed root: https://newjersey.craigslist.org/
+2026-03-23 04:08:47,478 [INFO] [6/281] ✓ [newjersey.craigslist.org] [owner] Excellent condition Subaru Forester 5-speed manual trans. — $6,800
+2026-03-23 04:08:47,480 [INFO] Primed root: https://hudsonvalley.craigslist.org/
+2026-03-23 04:08:47,508 [INFO] [7/281] ✓ [hudsonvalley.craigslist.org] [owner] 15 SUBARU FORESTER AWD 2.5L4cyl 6SPEED MANUAL TRANS $4800 OBO READ DES — $4,800
+2026-03-23 04:08:47,674 [INFO] Primed sub-area: https://newyork.craigslist.org/brk/
+2026-03-23 04:08:47,721 [INFO] [8/281] ✓ [newyork.craigslist.org] [owner] 2011 Toyota RAV4 AWD – 133,000 Miles — $9,500
+2026-03-23 04:08:49,723 [INFO] [9/281] ✓ [cnj.craigslist.org] [owner] 2015 Ford F-150 SuperCab 4X4 XLT — $13,500
+2026-03-23 04:08:50,409 [INFO] [10/281] ✓ [newjersey.craigslist.org] [owner] Cadillac Escalade 2023 — $45,800
+2026-03-23 04:08:50,521 [INFO] [11/281] ✓ [longisland.craigslist.org] [dealer] 2022 Ford Bronco Sport "Big Bend", 76k Miles, Easy Fix! — $9,800
+2026-03-23 04:08:50,649 [INFO] [12/281] ✓ [southjersey.craigslist.org] [owner] 2006 Dodge RAM 2500 for Sale — $17,000
+2026-03-23 04:08:50,762 [INFO] [13/281] ✓ [hudsonvalley.craigslist.org] [owner] 2023 Hyundai Elantra SEL — $18,900
+2026-03-23 04:08:50,782 [INFO] [14/281] ✓ [philadelphia.craigslist.org] [dealer] 2004 Toyota Highlander Base Fwd 4dr SUV — $2,995
+2026-03-23 04:08:50,843 [INFO] [15/281] ✓ [allentown.craigslist.org] [owner] 2001 Subaru Impreza RS for Parts or Rebuild — $2,500
+2026-03-23 04:08:51,496 [INFO] Primed sub-area: https://newyork.craigslist.org/mnh/
+2026-03-23 04:08:51,563 [INFO] [16/281] ✓ [newyork.craigslist.org] [owner] 2013 Dodge Dart Limited 2.0 — $2,500
+2026-03-23 04:08:51,947 [INFO] [17/281] ✓ [cnj.craigslist.org] [dealer] 1997 Nissan Maxima GLE 4dr Sedan — $2,250
+2026-03-23 04:08:52,642 [INFO] [18/281] ✓ [longisland.craigslist.org] [dealer] 2020 BMW X3 XDrive30i, 5k Miles, No Damage — $17,500
+2026-03-23 04:08:52,945 [INFO] [19/281] ✓ [philadelphia.craigslist.org] [owner] 2013 Chrysler Town & Country — $7,200
+2026-03-23 04:08:53,659 [INFO] [20/281] ✓ [allentown.craigslist.org] [owner] 2012 Kia Optima LX new pa ins & emm. Many new parts. Runs great! — $3,995
+2026-03-23 04:08:53,778 [INFO] [21/281] ✓ [southjersey.craigslist.org] [dealer] 2006 Chrysler 300-Series C 4dr Sedan — $2,995
+2026-03-23 04:08:53,811 [INFO] [22/281] ✓ [newjersey.craigslist.org] [owner] 2011 Ford escape Limited sport package — $4,300
+2026-03-23 04:08:53,830 [INFO] [23/281] ✓ [hudsonvalley.craigslist.org] [owner] 1967 Ford Mustang Hardtop.  V8, C4 Automatic, California Car — $22,500
+2026-03-23 04:08:54,990 [INFO] Primed sub-area: https://newyork.craigslist.org/stn/
+2026-03-23 04:08:55,024 [INFO] [24/281] ✓ [longisland.craigslist.org] [owner] 2012 Ford Escape XLT — $3,500
+2026-03-23 04:08:55,044 [INFO] [25/281] ✓ [newyork.craigslist.org] [owner] 2017 Ford Explorer Police Interceptor Utility AWD Flex Fuel 1 Owner — $12,900
+2026-03-23 04:08:55,047 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (25 rows, 27 cols)
+2026-03-23 04:08:55,048 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (25 rows)
+2026-03-23 04:08:55,048 [INFO]   >> Checkpoint 25/281 | Clean: 25
+2026-03-23 04:08:55,096 [INFO] [26/281] ✓ [cnj.craigslist.org] [owner] 2012 Jeep Wrangler Unlimited Sport. — $9,800
+2026-03-23 04:08:55,487 [INFO] [27/281] ✓ [philadelphia.craigslist.org] [dealer] 2004 Hyundai Sonata GLS 4dr Sedan — $1,995
+2026-03-23 04:08:56,316 [INFO] [28/281] ✓ [southjersey.craigslist.org] [dealer] 2013 Hyundai Elantra GLS 4dr Sedan 6A — $3,995
+2026-03-23 04:08:56,499 [INFO] [29/281] ✓ [allentown.craigslist.org] [owner] 2009 VW Beetle — $1,000
+2026-03-23 04:08:56,633 [INFO] [30/281] ✓ [newjersey.craigslist.org] [owner] 2006 Volvo S40 — $4,799
+2026-03-23 04:08:56,677 [INFO] [31/281] ✓ [hudsonvalley.craigslist.org] [owner] 2005 BMW X3 3.0i six-speed manual — $2,550
+2026-03-23 04:08:57,564 [INFO] [32/281] ✓ [longisland.craigslist.org] [owner] 2020 Ford F-150 XLT SuperCrew Roush Pacakage — $30,000
+2026-03-23 04:08:57,628 [INFO] [33/281] ✓ [newyork.craigslist.org] [owner] Chevy equinox for sale — $5,700
+2026-03-23 04:08:57,820 [INFO] [34/281] ✓ [cnj.craigslist.org] [owner] 2011 BMW 328i — $3,500
+2026-03-23 04:08:57,971 [INFO] [35/281] ✓ [philadelphia.craigslist.org] [dealer] 1999 Ford F150 — $2,700
+2026-03-23 04:08:58,495 [INFO] [36/281] ✓ [southjersey.craigslist.org] [dealer] 2008 Ford Edge SEL 4dr Crossover — $2,995
+2026-03-23 04:08:58,973 [INFO] [37/281] ✓ [hudsonvalley.craigslist.org] [dealer] FAST AND EASY CREDIT APPROVAL 2017 RAM 1500 Tradesman Quad Cab 4X4!! — $18,950
+2026-03-23 04:08:59,354 [INFO] [38/281] ✓ [newjersey.craigslist.org] [owner] 2009 Ford F150 supercrew — $1,500
+2026-03-23 04:08:59,474 [INFO]   >> Domain complete: allentown.craigslist.org
+2026-03-23 04:08:59,824 [INFO] Primed root: https://newhaven.craigslist.org/
+2026-03-23 04:08:59,870 [INFO] [39/281] ✓ [newhaven.craigslist.org] [dealer] Super smooth Nissan Altima — $4,000
+2026-03-23 04:09:00,209 [INFO] [40/281] ✓ [philadelphia.craigslist.org] [dealer] 1993 Buick Century Special 4dr Sedan — $1,895
+2026-03-23 04:09:00,232 [INFO] [41/281] ✓ [longisland.craigslist.org] [dealer] 2025 Cadillac Escalade ESV Premium Luxury SUV — $0
+2026-03-23 04:09:00,767 [INFO] [42/281] ✓ [newyork.craigslist.org] [owner] CHEVY CAPRICE WAGON ECTO4 — $10,000
+2026-03-23 04:09:01,272 [INFO] [43/281] ✓ [cnj.craigslist.org] [dealer] 2012 Nissan Pathfinder LE 4x4 4dr SUV — $2,995
+2026-03-23 04:09:01,656 [INFO] [44/281] ✓ [hudsonvalley.craigslist.org] [owner] 2015 Subaru Forester 2.5i Premium — $9,500
+2026-03-23 04:09:01,853 [INFO] [45/281] ✓ [southjersey.craigslist.org] [owner] Fun for Sale - Saab Cherry Red Convertible — $1,000
+2026-03-23 04:09:01,992 [INFO] [46/281] ✓ [newhaven.craigslist.org] [owner] 2004 Chrysler Crossfire – Clean – Low Miles–Mercedes Platform–Must See — $7,500
+2026-03-23 04:09:02,320 [INFO] [47/281] ✓ [newjersey.craigslist.org] [dealer] 2016 BMW 3 Series Gran Turismo 328i 328 i 328-i xDrive Gran Turismo AW — $8,900
+2026-03-23 04:09:02,851 [INFO] [48/281] ✓ [longisland.craigslist.org] [dealer] 2024 Mercedes-Benz Sprinter High Roof 4-Cyl Diesel HO Van — $0
+2026-03-23 04:09:03,123 [INFO] [49/281] ✓ [newyork.craigslist.org] [dealer] 2003 GMC Yukon XL SLT AWD SUV — $5,900
+2026-03-23 04:09:03,169 [INFO] [50/281] ✓ [philadelphia.craigslist.org] [owner] 2008 Mazda 3 iTouring — $2,850
+2026-03-23 04:09:03,174 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (50 rows, 27 cols)
+2026-03-23 04:09:03,176 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (50 rows)
+2026-03-23 04:09:03,176 [INFO]   >> Checkpoint 50/281 | Clean: 50
+2026-03-23 04:09:03,996 [INFO] [51/281] ✓ [cnj.craigslist.org] [dealer] 2010 FORD EXPLORER EDDIE BAUER 4X4 SUV WITH NAVIGATION, — $2,500
+2026-03-23 04:09:04,277 [INFO] [52/281] ✓ [southjersey.craigslist.org] [dealer] 2006 Nissan Pathfinder LE 4dr SUV 4WD — $1,000
+2026-03-23 04:09:04,884 [INFO] [53/281] ✓ [newjersey.craigslist.org] [owner] 2010 Chevrolet Equinox LT — $5,500
+2026-03-23 04:09:04,915 [INFO] [54/281] ✓ [hudsonvalley.craigslist.org] [owner] 2008 Honda Accord — $3,200
+2026-03-23 04:09:05,061 [INFO] [55/281] ✓ [longisland.craigslist.org] [dealer] 2023 Mercedes-Benz Sprinter Standard Roof 4-Cyl Gas Van — $0
+2026-03-23 04:09:05,336 [INFO] [56/281] ✓ [newhaven.craigslist.org] [owner] 2015 Jeep Compass — $5,500
+2026-03-23 04:09:05,661 [INFO] [57/281] ✓ [philadelphia.craigslist.org] [dealer] 2005 Pontiac gto aps twin turbo 6spd, many upgrades 10 sec car! — $24,999
+2026-03-23 04:09:06,192 [INFO] [58/281] ✓ [newyork.craigslist.org] [owner] 2022 Honda Civic — $6,499
+2026-03-23 04:09:06,243 [INFO] [59/281] ✓ [cnj.craigslist.org] [owner] Kenworth T600 2006 sleeper — $11,000
+2026-03-23 04:09:06,821 [INFO] [60/281] ✓ [southjersey.craigslist.org] [owner] 1975 camaro for sale — $8,500
+2026-03-23 04:09:07,280 [INFO] [61/281] ✓ [newjersey.craigslist.org] [owner] Brand New Sprinter Van — $67,500
+2026-03-23 04:09:07,792 [INFO] [62/281] ✓ [hudsonvalley.craigslist.org] [owner] 2003 Honda Civic Lx (Read description)! — $1,400
+2026-03-23 04:09:07,943 [INFO] [63/281] ✓ [newhaven.craigslist.org] [owner] 2015 Honda Accord — $7,500
+2026-03-23 04:09:07,966 [INFO] [64/281] ✓ [longisland.craigslist.org] [dealer] 2022 Mercedes-Benz Sprinter Standard Roof I4 Diesel Van — $0
+2026-03-23 04:09:08,393 [INFO] [65/281] ✓ [philadelphia.craigslist.org] [dealer] 2004 Honda Civic LX 2dr Coupe — $2,995
+2026-03-23 04:09:09,306 [INFO] Primed sub-area: https://newyork.craigslist.org/que/
+2026-03-23 04:09:09,359 [INFO] [66/281] ✓ [newyork.craigslist.org] [owner] Excellent condition Subaru Forester 5-speed manual trans. — $6,800
+2026-03-23 04:09:09,521 [INFO] [67/281] ✓ [cnj.craigslist.org] [owner] 2006 Mercedes-Benz E 500 formatic — $3,200
+2026-03-23 04:09:09,774 [INFO] [68/281] ✓ [southjersey.craigslist.org] [dealer] 2007 Subaru Legacy Wagon 2.5i AWD 4dr Wagon (2.5L F4 4A) — $2,395
+2026-03-23 04:09:09,837 [INFO] [69/281] ✓ [newjersey.craigslist.org] [owner] 2012 GMC Acadia SLT-1 AWD • 3rd Row • Leather • Clean Title • Family SUV — $7,200
+2026-03-23 04:09:10,214 [INFO] [70/281] ✓ [newhaven.craigslist.org] [owner] 2009 Honda accord — $5,999
+2026-03-23 04:09:10,341 [INFO] [71/281] ✓ [hudsonvalley.craigslist.org] [owner] 1973 GMC 6500 Solid Dump Truck — $1,000
+2026-03-23 04:09:10,532 [INFO] [72/281] ✓ [longisland.craigslist.org] [owner] 1997 Firebird Formula Convertible( RARE)LT1-V8(Florida Car) — $12,350
+2026-03-23 04:09:10,533 [INFO]   >> [longisland.craigslist.org] extended pause 5.2s
+2026-03-23 04:09:10,875 [INFO] [73/281] ✓ [philadelphia.craigslist.org] [owner] Mercedes E350 — $4,500
+2026-03-23 04:09:10,875 [INFO]   >> [philadelphia.craigslist.org] extended pause 5.0s
+2026-03-23 04:09:11,746 [INFO] [74/281] ✓ [cnj.craigslist.org] [owner] Mustang E — $25,999
+2026-03-23 04:09:11,746 [INFO]   >> [cnj.craigslist.org] extended pause 4.5s
+2026-03-23 04:09:12,292 [INFO] [75/281] ✓ [southjersey.craigslist.org] [dealer] 2016 BMW 5-Series 528i xDrive AWD 4dr Sedan — $8,995
+2026-03-23 04:09:12,299 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (75 rows, 27 cols)
+2026-03-23 04:09:12,302 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (75 rows)
+2026-03-23 04:09:12,302 [INFO]   >> Checkpoint 75/281 | Clean: 75
+2026-03-23 04:09:12,302 [INFO]   >> [southjersey.craigslist.org] extended pause 4.9s
+2026-03-23 04:09:12,417 [INFO] [76/281] ✓ [newjersey.craigslist.org] [dealer] 2017 Chrysler Pacifica TouringL Plus Touring L Plus Touring-L Plus — $21,300
+2026-03-23 04:09:12,417 [INFO]   >> [newjersey.craigslist.org] extended pause 6.5s
+2026-03-23 04:09:12,539 [INFO] [77/281] ✓ [newhaven.craigslist.org] [owner] 2007 Honda Accord — $2,999
+2026-03-23 04:09:12,579 [INFO] [78/281] ✓ [newyork.craigslist.org] [dealer] 2005 Toyota RAV4 SUV — $3,900
+2026-03-23 04:09:13,393 [INFO] [79/281] ✓ [hudsonvalley.craigslist.org] [owner] 1967 4x4 International Scout — $1,000
+2026-03-23 04:09:13,393 [INFO]   >> [hudsonvalley.craigslist.org] extended pause 5.8s
+2026-03-23 04:09:15,511 [INFO] [80/281] ✓ [newyork.craigslist.org] [owner] 2009 Toyota RAV4 · LE Plus Sport Utility 4D — $4,999
+2026-03-23 04:09:15,511 [INFO]   >> [newyork.craigslist.org] extended pause 5.2s
+2026-03-23 04:09:15,809 [INFO] [81/281] ✓ [longisland.craigslist.org] [dealer] 2015 Nissan Rogue SV — $5,900
+2026-03-23 04:09:15,889 [INFO] [82/281] ✓ [newhaven.craigslist.org] [owner] 2014 BMW 750LI — $6,999
+2026-03-23 04:09:15,949 [INFO] [83/281] ✓ [philadelphia.craigslist.org] [dealer] 2012 Volkswagen Jetta SE PZEV 4dr Sedan 6A — $3,995
+2026-03-23 04:09:16,309 [INFO] [84/281] ✓ [cnj.craigslist.org] [dealer] 2009 Mercedes-Benz E Class E 350 4MATIC AWD 4dr Sedan — $5,850
+2026-03-23 04:09:17,287 [INFO] [85/281] ✓ [southjersey.craigslist.org] [owner] 2015 Chevy Equinox LTZ AWD — $5,500
+2026-03-23 04:09:18,091 [INFO] [86/281] ✓ [longisland.craigslist.org] [owner] 2016 Lexus RX350 AWD — $12,000
+2026-03-23 04:09:18,093 [INFO]   >> Domain complete: newhaven.craigslist.org
+2026-03-23 04:09:18,207 [INFO] Primed root: https://scranton.craigslist.org/
+2026-03-23 04:09:18,229 [INFO] [87/281] ✓ [scranton.craigslist.org] [owner] 09 GMC Sierra — $12,000
+2026-03-23 04:09:18,926 [INFO] [88/281] ✓ [newjersey.craigslist.org] [owner] 2008 Lincoln town car. Elderly driven. Very good cond. runs excellent — $4,900
+2026-03-23 04:09:19,269 [INFO] [89/281] ✓ [hudsonvalley.craigslist.org] [owner] 1999 BMW 540i Sport — $8,500
+2026-03-23 04:09:19,370 [INFO] [90/281] ✓ [philadelphia.craigslist.org] [owner] Cargo van — $900
+2026-03-23 04:09:19,551 [INFO] [91/281] ✓ [cnj.craigslist.org] [owner] 2018 Ford F150 bifueo Clean title excellent truck — $15,500
+2026-03-23 04:09:20,564 [INFO] [92/281] ✓ [southjersey.craigslist.org] [owner] 2006 Ram 1500 SLT 5.7 Hemi 4WD — $5,500
+2026-03-23 04:09:20,602 [INFO] [93/281] ✓ [longisland.craigslist.org] [owner] 2011 BMW 328i xdrive — $6,000
+2026-03-23 04:09:20,722 [INFO] [94/281] ✓ [newyork.craigslist.org] [owner] 2010 Dodge Caliber SXT — $2,000
+2026-03-23 04:09:21,294 [INFO] [95/281] ✓ [newjersey.craigslist.org] [owner] WE BUY CARS MINIVANS & SUVS // SELL ME YOUR CAR — $2,000
+2026-03-23 04:09:21,429 [INFO] [96/281] ✓ [philadelphia.craigslist.org] [owner] 2014 hyundai sonata hybrid limited — $5,600
+2026-03-23 04:09:21,497 [INFO] [97/281] ✓ [scranton.craigslist.org] [dealer] 2012 Honda Civic - In-House Financing Available! — $9,495
+2026-03-23 04:09:21,778 [INFO] [98/281] ✓ [cnj.craigslist.org] [owner] F450 7.3 engine — $6,200
+2026-03-23 04:09:22,266 [INFO] [99/281] ✓ [hudsonvalley.craigslist.org] [owner] 2014 Corvette Stingray LT1 — $37,500
+2026-03-23 04:09:23,233 [INFO] [100/281] ✓ [newyork.craigslist.org] [owner] 2007 Toyota Matrix XR - manual transmission — $5,500
+2026-03-23 04:09:23,242 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (100 rows, 27 cols)
+2026-03-23 04:09:23,246 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (100 rows)
+2026-03-23 04:09:23,246 [INFO]   >> Checkpoint 100/281 | Clean: 100
+2026-03-23 04:09:23,403 [INFO] [101/281] ✓ [southjersey.craigslist.org] [owner] 2003 Chevy Impala — $2,000
+2026-03-23 04:09:23,526 [INFO] [102/281] ✓ [philadelphia.craigslist.org] [dealer] 2017 Chevrolet Sonic LT Auto 4dr Hatchback — $4,995
+2026-03-23 04:09:23,662 [INFO] [103/281] ✓ [newjersey.craigslist.org] [owner] 2005 VW Beetle Convertible Low Miles — $6,500
+2026-03-23 04:09:23,934 [INFO] [104/281] ✓ [longisland.craigslist.org] [owner] 2007 FORD E-250 V8  $3500 — $3,500
+2026-03-23 04:09:24,324 [INFO] [105/281] ✓ [cnj.craigslist.org] [owner] 2018 Mercedes-2018 Mercedes-Benz C 300 Convertible  "BLUE" — $22,000
+2026-03-23 04:09:24,610 [INFO]   >> Domain complete: scranton.craigslist.org
+2026-03-23 04:09:24,724 [INFO] Primed root: https://jerseyshore.craigslist.org/
+2026-03-23 04:09:24,759 [INFO] [106/281] ✓ [jerseyshore.craigslist.org] [owner] 1996 Maxima parts car — $1,000
+2026-03-23 04:09:25,676 [INFO] [107/281] ✓ [southjersey.craigslist.org] [dealer] 2013 Ford Explorer XLT AWD 4dr SUV — $5,995
+2026-03-23 04:09:25,752 [INFO] [108/281] ✓ [hudsonvalley.craigslist.org] [owner] 2005 Hyundai Tucson — $800
+2026-03-23 04:09:26,504 [INFO] [109/281] ✓ [philadelphia.craigslist.org] [owner] Dodge avenger low miles 1 owner 29,000 miles — $4,200
+2026-03-23 04:09:26,743 [INFO] [110/281] ✓ [newjersey.craigslist.org] [owner] 2008 jeep grand cherokee — $2,000
+2026-03-23 04:09:26,752 [INFO] Primed sub-area: https://newyork.craigslist.org/lgi/
+2026-03-23 04:09:26,793 [INFO] [111/281] ✓ [newyork.craigslist.org] [dealer] 2017 KIA SORENTO SUV -- SUPER CONDITION -- LOW Miles/LOW Price - $10,9 — $10,900
+2026-03-23 04:09:27,042 [INFO] [112/281] ✓ [longisland.craigslist.org] [owner] 2000 Chevrolet monte Carlo — $1,900
+2026-03-23 04:09:27,525 [INFO] [113/281] ✓ [jerseyshore.craigslist.org] [owner] 2017 Mercedes CLA 250 — $12,800
+2026-03-23 04:09:27,545 [INFO] [114/281] ✓ [cnj.craigslist.org] [owner] 2010 madza 6 — $2,000
+2026-03-23 04:09:27,909 [INFO]   >> Domain complete: southjersey.craigslist.org
+2026-03-23 04:09:27,932 [INFO] [115/281] ✓ [hudsonvalley.craigslist.org] [owner] 2008 mustang convertible gt premium — $18,500
+2026-03-23 04:09:28,025 [INFO] Primed root: https://delaware.craigslist.org/
+2026-03-23 04:09:28,066 [INFO] [116/281] ✓ [delaware.craigslist.org] [owner] 2003 Subaru Outback Deluxe Edition — $1,950
+2026-03-23 04:09:29,445 [INFO] [117/281] ✓ [newyork.craigslist.org] [owner] 2022 Toyota Corolla ,LE,AT,AC,FULL PWR ,LOW MILES,USB CABLE,$$ 4000 — $4,000
+2026-03-23 04:09:29,701 [INFO] [118/281] ✓ [newjersey.craigslist.org] [owner] 1931 Ford Model A — $15,000
+2026-03-23 04:09:29,991 [INFO] [119/281] ✓ [philadelphia.craigslist.org] [dealer] 2015 Nissan Altima 2.5 SV 4dr Sedan — $6,600
+2026-03-23 04:09:30,539 [INFO] [120/281] ✓ [longisland.craigslist.org] [owner] 2013 Suburban — $4,000
+2026-03-23 04:09:30,685 [INFO] [121/281] ✓ [delaware.craigslist.org] [owner] 2002 audi A4 1.8t quattro — $1,500
+2026-03-23 04:09:30,783 [INFO]   >> Domain complete: hudsonvalley.craigslist.org
+2026-03-23 04:09:30,908 [INFO] [122/281] ✓ [jerseyshore.craigslist.org] [owner] 2010 Chevrolet Malibu LT (129k miles) — $3,500
+2026-03-23 04:09:30,909 [INFO] Primed root: https://catskills.craigslist.org/
+2026-03-23 04:09:30,953 [INFO] [123/281] ✓ [catskills.craigslist.org] [owner] RV 25FT Food truck conversion, Business opportunity — $15,000
+2026-03-23 04:09:31,049 [INFO] [124/281] ✓ [cnj.craigslist.org] [owner] 2013 Chevy impala for sale — $2,500
+2026-03-23 04:09:32,162 [INFO] Primed sub-area: https://newyork.craigslist.org/jsy/
+2026-03-23 04:09:32,207 [INFO] [125/281] ✓ [newyork.craigslist.org] [owner] 2016 Toyota Camry Hybrid LE — $7,799
+2026-03-23 04:09:32,217 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (125 rows, 27 cols)
+2026-03-23 04:09:32,222 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (125 rows)
+2026-03-23 04:09:32,222 [INFO]   >> Checkpoint 125/281 | Clean: 125
+2026-03-23 04:09:32,376 [INFO] [126/281] ✓ [newjersey.craigslist.org] [owner] Dodge TRX 2022 — $46,000
+2026-03-23 04:09:33,062 [INFO]   >> Domain complete: catskills.craigslist.org
+2026-03-23 04:09:33,115 [INFO] [127/281] ✓ [longisland.craigslist.org] [owner] 2014 jeep patriot sport 4wd — $4,900
+2026-03-23 04:09:33,119 [INFO] Primed root: https://hartford.craigslist.org/
+2026-03-23 04:09:33,181 [INFO] [128/281] ✓ [hartford.craigslist.org] [dealer] $309/mo - 2012 Maserati GranTurismo 2dr Cpe GranTurismo S — $18,900
+2026-03-23 04:09:33,409 [INFO]   >> Domain complete: delaware.craigslist.org
+2026-03-23 04:09:33,439 [INFO] [129/281] ✓ [philadelphia.craigslist.org] [dealer] 2013 Dodge Dart Limited 4dr Sedan — $3,500
+2026-03-23 04:09:33,522 [INFO] Primed root: https://reading.craigslist.org/
+2026-03-23 04:09:33,563 [INFO] [130/281] ✓ [reading.craigslist.org] [dealer] 2015 Toyota 4Runner 4WD - amazing condition, runs like new, must see! — $18,900
+2026-03-23 04:09:34,123 [INFO] [131/281] ✓ [cnj.craigslist.org] [dealer] 2002 Volvo V70 2.4T 4dr Turbo Wagon — $1,995
+2026-03-23 04:09:34,408 [INFO] [132/281] ✓ [jerseyshore.craigslist.org] [owner] Ford Edge 2008 AWD — $2,500
+2026-03-23 04:09:34,665 [INFO] [133/281] ✓ [newjersey.craigslist.org] [dealer] 2016 Acura ILX Sdn wTechnology PlusASPEC Pkg Sdn wTechnology PlusA SPE — $9,500
+2026-03-23 04:09:35,114 [INFO] [134/281] ✓ [newyork.craigslist.org] [dealer] 2009 Cadillac Escalade 2-Mode Hybrid AWD SUV — $6,900
+2026-03-23 04:09:35,186 [INFO]   >> Domain complete: hartford.craigslist.org
+2026-03-23 04:09:35,896 [INFO] [135/281] ✓ [philadelphia.craigslist.org] [dealer] 2012 Toyota RAV4 Base 4dr SUV — $6,500
+2026-03-23 04:09:36,283 [INFO] [136/281] ✓ [cnj.craigslist.org] [owner] Volvo — $8,000
+2026-03-23 04:09:36,339 [INFO] [137/281] ✓ [longisland.craigslist.org] [dealer] 2014 Chevrolet Captiva Sport Fleet FWD 4dr LT — $5,404
+2026-03-23 04:09:36,717 [INFO]   >> Domain complete: reading.craigslist.org
+2026-03-23 04:09:36,799 [INFO] [138/281] ✓ [newjersey.craigslist.org] [owner] 2012 (standard transmission) Subaru Outback 2.5  PZEV — $3,200
+2026-03-23 04:09:37,772 [INFO] [139/281] ✓ [jerseyshore.craigslist.org] [owner] 2019 Cadillac XTS — $11,312
+2026-03-23 04:09:38,180 [INFO] [140/281] ✓ [philadelphia.craigslist.org] [dealer] 2006 Chevrolet Equinox LT AWD 4dr SUV — $4,200
+2026-03-23 04:09:38,219 [INFO] [141/281] ✓ [newyork.craigslist.org] [owner] 2015 LAND ROVER RANGE ROVER EVOQUE 360 CAMERA NAVIGATION AWD 93K MILES — $8,900
+2026-03-23 04:09:39,002 [INFO] [142/281] ✓ [longisland.craigslist.org] [dealer] 2015 Honda Civic Sedan 4dr CVT SE — $15,473
+2026-03-23 04:09:39,099 [INFO] [143/281] ✓ [newjersey.craigslist.org] [owner] 2011 Hyundai Sonata 6spd manual — $4,800
+2026-03-23 04:09:39,286 [INFO] [144/281] ✓ [cnj.craigslist.org] [dealer] 2004 Mercury Grand Marquis GS 4dr Sedan — $3,695
+2026-03-23 04:09:40,633 [INFO] [145/281] ✓ [jerseyshore.craigslist.org] [owner] 2008 Chevrolet Trailblazer LT - Reliable - Dependable - 4 WD - V6 — $3,950
+2026-03-23 04:09:40,716 [INFO] [146/281] ✓ [philadelphia.craigslist.org] [dealer] 2012 Audi A7 3.0T quattro Prestige AWD 4dr Sportback — $8,900
+2026-03-23 04:09:40,716 [INFO]   >> [philadelphia.craigslist.org] extended pause 5.1s
+2026-03-23 04:09:41,285 [INFO] [147/281] ✓ [newyork.craigslist.org] [owner] 2011 Chevrolet Silverado LT Crew Cab 4WD 5.3L — $4,500
+2026-03-23 04:09:41,630 [INFO] [148/281] ✓ [cnj.craigslist.org] [owner] 2013 Chevrolet Sonic — $2,400
+2026-03-23 04:09:41,630 [INFO]   >> [cnj.craigslist.org] extended pause 4.9s
+2026-03-23 04:09:42,169 [INFO] [149/281] ✓ [longisland.craigslist.org] [dealer] 2014 Ram ProMaster Cargo Van — $20,790
+2026-03-23 04:09:42,169 [INFO]   >> [longisland.craigslist.org] extended pause 4.9s
+2026-03-23 04:09:42,183 [INFO] [150/281] ✓ [newjersey.craigslist.org] [owner] Honda Odyssey 2012 174k miles - Needs Repair — $950
+2026-03-23 04:09:42,195 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (150 rows, 27 cols)
+2026-03-23 04:09:42,201 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (150 rows)
+2026-03-23 04:09:42,201 [INFO]   >> Checkpoint 150/281 | Clean: 150
+2026-03-23 04:09:42,201 [INFO]   >> [newjersey.craigslist.org] extended pause 5.7s
+2026-03-23 04:09:43,203 [INFO] [151/281] ✓ [jerseyshore.craigslist.org] [owner] Lexus IS250c Convertible — $9,500
+2026-03-23 04:09:44,259 [INFO] [152/281] ✓ [newyork.craigslist.org] [owner] 1995 Mercury Grand Marquis GS Gold Negotiable — $1,500
+2026-03-23 04:09:45,594 [INFO]   >> Domain complete: jerseyshore.craigslist.org
+2026-03-23 04:09:45,819 [INFO] [153/281] ✓ [philadelphia.craigslist.org] [dealer] 2015 Acura TLX V6 w/Tech 4dr Sedan w/Technology Package — $9,200
+2026-03-23 04:09:46,588 [INFO] [154/281] ✓ [cnj.craigslist.org] [dealer] 2010 Subaru Forester 2.5X Premium AWD 4dr Wagon 4A — $5,500
+2026-03-23 04:09:47,179 [INFO] [155/281] ✓ [longisland.craigslist.org] [dealer] 2021 Subaru WRX Manual — $23,616
+2026-03-23 04:09:47,338 [INFO] [156/281] ✓ [newyork.craigslist.org] [owner] 2012 Buick Enclave – Comfortable, Ready for New Adventures — $1,300
+2026-03-23 04:09:47,338 [INFO]   >> [newyork.craigslist.org] extended pause 3.6s
+2026-03-23 04:09:47,931 [INFO] [157/281] ✓ [newjersey.craigslist.org] [owner] BMW 2013 - 128i M sport — $12,500
+2026-03-23 04:09:48,315 [INFO] [158/281] ✓ [philadelphia.craigslist.org] [dealer] 2007 Volvo S80 V8 AWD 4dr Sedan — $3,900
+2026-03-23 04:09:48,904 [INFO] [159/281] ✓ [cnj.craigslist.org] [dealer] 2016 Jeep Renegade Limited 4x4 4dr SUV — $7,000
+2026-03-23 04:09:50,420 [INFO] [160/281] ✓ [longisland.craigslist.org] [dealer] 2016 Ram 1500 4WD Crew Cab 149 Sport — $0
+2026-03-23 04:09:50,838 [INFO] [161/281] ✓ [newjersey.craigslist.org] [owner] 2003 Dodge Grand Caravan — $1,500
+2026-03-23 04:09:51,019 [INFO] [162/281] ✓ [newyork.craigslist.org] [owner] 2005 VOLKSWAGEN GOLF 136K MILES $2999 — $2,999
+2026-03-23 04:09:51,171 [INFO] [163/281] ✓ [cnj.craigslist.org] [dealer] 2017 BMW 4 Series 430i xDrive Gran Coupe AWD 4dr Sedan — $12,000
+2026-03-23 04:09:51,835 [INFO] [164/281] ✓ [philadelphia.craigslist.org] [dealer] 2012 Mazda Mazda3 i Touring 4dr Sedan 6M — $2,995
+2026-03-23 04:09:53,104 [INFO] [165/281] ✓ [newjersey.craigslist.org] [owner] Mercedes BenzGL450 — $9,600
+2026-03-23 04:09:53,506 [INFO] [166/281] ✓ [newyork.craigslist.org] [dealer] 2012 Land Rover Range Rover Evoque HB Prestige Premium — $8,999
+2026-03-23 04:09:53,956 [INFO] [167/281] ✓ [longisland.craigslist.org] [dealer] 2012 Toyota Prius 5dr HB One (Natl) — $0
+2026-03-23 04:09:54,177 [INFO] [168/281] ✓ [cnj.craigslist.org] [dealer] 2016 Ford Expedition Limited 4x4 4dr SUV — $11,900
+2026-03-23 04:09:54,229 [INFO] [169/281] ✓ [philadelphia.craigslist.org] [dealer] runs excellent Ford F-150 Roush Raptor — $29,960
+2026-03-23 04:09:55,678 [INFO] [170/281] ✓ [newyork.craigslist.org] [owner] 2016 Nissan Altima — $8,000
+2026-03-23 04:09:56,115 [INFO] [171/281] ✓ [newjersey.craigslist.org] [owner] Ford Fusion 2016 SE 2.5L — $9,400
+2026-03-23 04:09:56,328 [INFO] [172/281] ✓ [longisland.craigslist.org] [dealer] 2025 Subaru Impreza AWD — $0
+2026-03-23 04:09:56,806 [INFO] [173/281] ✓ [philadelphia.craigslist.org] [dealer] luxury coupe Lexus LC 500 — $48,960
+2026-03-23 04:09:57,353 [INFO] [174/281] ✓ [cnj.craigslist.org] [dealer] 2007 Toyota Prius Base 4dr Hatchback — $3,600
+2026-03-23 04:09:58,443 [INFO] [175/281] ✓ [newyork.craigslist.org] [owner] TRAILBLAZER AND VAN FOR SALE — $3,000
+2026-03-23 04:09:58,459 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (175 rows, 27 cols)
+2026-03-23 04:09:58,465 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (175 rows)
+2026-03-23 04:09:58,465 [INFO]   >> Checkpoint 175/281 | Clean: 175
+2026-03-23 04:09:58,950 [INFO] [176/281] ✓ [longisland.craigslist.org] [owner] 2009 range rover — $4,000
+2026-03-23 04:09:59,148 [INFO] [177/281] ✓ [newjersey.craigslist.org] [dealer] $218/mo - 2014 Land Rover Range Rover 4WDSupercharged Ebony Edition — $13,333
+2026-03-23 04:09:59,355 [INFO] [178/281] ✓ [philadelphia.craigslist.org] [owner] 2024 RAM 1500 Rebel 4WD 5.7L Auto, 19k — $31,300
+2026-03-23 04:10:00,032 [INFO] [179/281] ✓ [cnj.craigslist.org] [dealer] 2010 Nissan Frontier SE V6 4x4 4dr Crew Cab LWB Pickup 5A — $7,600
+2026-03-23 04:10:00,696 [INFO] [180/281] ✓ [newyork.craigslist.org] [owner] FOR SALE -  DUMP TRUCKS — $4,000
+2026-03-23 04:10:01,370 [INFO] [181/281] ✓ [longisland.craigslist.org] [owner] 2012 Ford van — $14,000
+2026-03-23 04:10:01,884 [INFO] [182/281] ✓ [newjersey.craigslist.org] [owner] Clean Acura RDX. Engine and transmission  perfect condition — $5,200
+2026-03-23 04:10:02,704 [INFO] [183/281] ✓ [philadelphia.craigslist.org] [owner] 2017 Dodge Journey — $6,100
+2026-03-23 04:10:03,072 [INFO] [184/281] ✓ [cnj.craigslist.org] [dealer] 1995 Chevrolet Caprice Classic/Impala SS SS 4dr Sedan — $9,900
+2026-03-23 04:10:03,593 [INFO] [185/281] ✓ [newyork.craigslist.org] [owner] FOR SALE - 4 TRUCKS - SOLD AS SET — $20,000
+2026-03-23 04:10:04,140 [INFO] [186/281] ✓ [newjersey.craigslist.org] [dealer] 2024 Ford Escape ST-Line — $20,569
+2026-03-23 04:10:04,223 [INFO] [187/281] ✓ [longisland.craigslist.org] [owner] Jeep Rubicon — $28,500
+2026-03-23 04:10:05,568 [INFO] [188/281] ✓ [cnj.craigslist.org] [dealer] 2010 Nissan Sentra 2.0 S 4dr Sedan — $3,600
+2026-03-23 04:10:05,801 [INFO] [189/281] ✓ [philadelphia.craigslist.org] [dealer] 2001 GMC Jimmy SLT 4WD 4dr SUV — $3,600
+2026-03-23 04:10:06,389 [INFO] [190/281] ✓ [newyork.craigslist.org] [owner] Mercedes Benz SL550 — $24,000
+2026-03-23 04:10:06,790 [INFO] [191/281] ✓ [longisland.craigslist.org] [owner] 2021 Land Rover Range Rover P400 Westminster Edition — $43,000
+2026-03-23 04:10:07,296 [INFO] [192/281] ✓ [newjersey.craigslist.org] [owner] 2013 VOLKSWAGEN JETTA SEL HYBRID — $4,800
+2026-03-23 04:10:08,148 [INFO] [193/281] ✓ [cnj.craigslist.org] [dealer] 2012 Chevrolet Malibu LS 4dr Sedan — $3,995
+2026-03-23 04:10:08,301 [INFO] [194/281] ✓ [philadelphia.craigslist.org] [dealer] 2013 Nissan Pathfinder SL 4x4 4dr SUV — $6,500
+2026-03-23 04:10:08,497 [INFO] [195/281] ✓ [newyork.craigslist.org] [owner] 2020 HONDA PILOT TOURING — $17,800
+2026-03-23 04:10:09,803 [INFO] [196/281] ✓ [longisland.craigslist.org] [owner] 2010 MAZDA 6  EXCELLENT CONDITION — $6,200
+2026-03-23 04:10:09,993 [INFO] [197/281] ✓ [newjersey.craigslist.org] [owner] CANT get FINANCED Due to your credit??? WE can help! — $600
+2026-03-23 04:10:10,775 [INFO] [198/281] ✓ [cnj.craigslist.org] [owner] 1963 AMC Rambler Classic 660 V8 — $5,500
+2026-03-23 04:10:10,775 [INFO]   >> [cnj.craigslist.org] extended pause 5.2s
+2026-03-23 04:10:11,027 [INFO] [199/281] ✓ [philadelphia.craigslist.org] [dealer] 2011 Dodge Grand Caravan Express 4dr Mini Van — $4,900
+2026-03-23 04:10:11,027 [INFO]   >> [philadelphia.craigslist.org] extended pause 4.5s
+2026-03-23 04:10:11,652 [INFO] Primed sub-area: https://newyork.craigslist.org/brx/
+2026-03-23 04:10:11,716 [INFO] [200/281] ✓ [newyork.craigslist.org] [dealer] 2017 Acura MDX SHAWD wTechnology Pkg SH AWD wTechnology Pkg SH-AWD wTe — $14,900
+2026-03-23 04:10:11,733 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (200 rows, 27 cols)
+2026-03-23 04:10:11,741 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (200 rows)
+2026-03-23 04:10:11,741 [INFO]   >> Checkpoint 200/281 | Clean: 200
+2026-03-23 04:10:12,202 [INFO] [201/281] ✓ [longisland.craigslist.org] [owner] 2006 e150 cargo van — $3,100
+2026-03-23 04:10:12,202 [INFO]   >> [longisland.craigslist.org] extended pause 4.5s
+2026-03-23 04:10:13,264 [INFO] [202/281] ✓ [newjersey.craigslist.org] [owner] BMW X3 2019 model — $22,700
+2026-03-23 04:10:13,264 [INFO]   >> [newjersey.craigslist.org] extended pause 5.7s
+2026-03-23 04:10:14,332 [INFO] [203/281] ✓ [newyork.craigslist.org] [owner] Toyota Avalon sedan single owner — $2,600
+2026-03-23 04:10:14,332 [INFO]   >> [newyork.craigslist.org] extended pause 5.5s
+2026-03-23 04:10:15,585 [INFO] [204/281] ✓ [philadelphia.craigslist.org] [dealer] 2003 Mercury Sable LS Premium 4dr Sedan — $1,995
+2026-03-23 04:10:16,039 [INFO] [205/281] ✓ [cnj.craigslist.org] [owner] 2006, Volvo S40 — $3,500
+2026-03-23 04:10:16,715 [INFO] [206/281] ✓ [longisland.craigslist.org] [owner] New Engine (2025) 2012 Hyundai Sonata — $9,500
+2026-03-23 04:10:18,145 [INFO] [207/281] ✓ [philadelphia.craigslist.org] [dealer] 2014 Chrysler Town & Country Touring L 4dr Mini Van — $5,000
+2026-03-23 04:10:18,970 [INFO] [208/281] ✓ [newjersey.craigslist.org] [owner] 2012 Chevy Cruze ECO — $5,000
+2026-03-23 04:10:19,561 [INFO] [209/281] ✓ [cnj.craigslist.org] [dealer] 2007 Cadillac CTS Sport 4dr Sedan — $3,500
+2026-03-23 04:10:19,727 [INFO] [210/281] ✓ [longisland.craigslist.org] [owner] 1992 Volkswagen cabriolet convertible — $5,200
+2026-03-23 04:10:19,917 [INFO] [211/281] ✓ [newyork.craigslist.org] [owner] 2016 Range Rover HSE — $15,900
+2026-03-23 04:10:21,708 [INFO] [212/281] ✓ [philadelphia.craigslist.org] [dealer] 2013 Nissan Altima 2.5 4dr Sedan — $5,400
+2026-03-23 04:10:22,177 [INFO] [213/281] ✓ [cnj.craigslist.org] [dealer] 2010 Ford Explorer XLT 4x4 4dr SUV — $4,200
+2026-03-23 04:10:22,313 [INFO]   >> Domain complete: newjersey.craigslist.org
+2026-03-23 04:10:22,582 [INFO] [214/281] ✓ [newyork.craigslist.org] [owner] Car for sell — $3,000
+2026-03-23 04:10:23,000 [INFO] [215/281] ✓ [longisland.craigslist.org] [dealer] 2011 Toyota Prius One 4dr Hatchback Hatchback — $9,490
+2026-03-23 04:10:24,289 [INFO] [216/281] ✓ [philadelphia.craigslist.org] [dealer] 2018 Ram 1500 Big Horn 4x4 4dr Crew Cab 5.5 ft. SB Pickup — $14,500
+2026-03-23 04:10:24,633 [INFO] [217/281] ✓ [cnj.craigslist.org] [dealer] 2009 Ford F-150 King Ranch 4x4 4dr SuperCrew Styleside 5.5 ft. SB — $5,900
+2026-03-23 04:10:25,445 [INFO] [218/281] ✓ [newyork.craigslist.org] [owner] 2009 infiniti G37x Very low mileage — $8,800
+2026-03-23 04:10:25,952 [INFO]   >> Domain complete: longisland.craigslist.org
+2026-03-23 04:10:26,877 [INFO] [219/281] ✓ [cnj.craigslist.org] [dealer] 2005 BMW 3-Series 325xi AWD 4dr Sport Wagon — $2,850
+2026-03-23 04:10:26,943 [INFO] [220/281] ✓ [philadelphia.craigslist.org] [dealer] 2017 Nissan Rogue SV AWD 4dr Crossover (midyear release) — $9,995
+2026-03-23 04:10:28,946 [INFO] [221/281] ✓ [cnj.craigslist.org] [dealer] 2024 Kia Forte LXS — $19,989
+2026-03-23 04:10:29,108 [INFO] Primed sub-area: https://newyork.craigslist.org/fct/
+2026-03-23 04:10:29,154 [INFO] [222/281] ✓ [newyork.craigslist.org] [owner] 2016 Volkswagen GTI SE — Sport Package | Lighting Package — $12,600
+2026-03-23 04:10:29,987 [INFO]   >> Domain complete: philadelphia.craigslist.org
+2026-03-23 04:10:31,483 [INFO] [223/281] ✓ [newyork.craigslist.org] [dealer] 2021 Volkswagen Tiguan 20T 20 T 20-T SE RLine Black 4MOTION 4 MOTION 4 — $15,900
+2026-03-23 04:10:31,770 [INFO] [224/281] ✓ [cnj.craigslist.org] [dealer] 2012 Mini Cooper Base 2dr Hatchback — $5,500
+2026-03-23 04:10:33,897 [INFO] [225/281] ✓ [newyork.craigslist.org] [owner] 2020 Camary SE — $11,500
+2026-03-23 04:10:33,926 [INFO] [226/281] ✓ [cnj.craigslist.org] [dealer] 2010 Mercedes-Benz GLK-Class GLK 350 4MATIC AWD 4dr SUV — $6,000
+2026-03-23 04:10:33,943 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (225 rows, 27 cols)
+2026-03-23 04:10:33,951 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (225 rows)
+2026-03-23 04:10:33,952 [INFO]   >> Checkpoint 225/281 | Clean: 225
+2026-03-23 04:10:36,007 [INFO]   >> Domain complete: cnj.craigslist.org
+2026-03-23 04:10:36,476 [INFO] [227/281] ✓ [newyork.craigslist.org] [owner] 2010 Land Rover LR2 — $4,100
+2026-03-23 04:10:39,221 [INFO] [228/281] ✓ [newyork.craigslist.org] [owner] 2013 Hyundai Elantra — $5,000
+2026-03-23 04:10:42,349 [INFO] [229/281] ✓ [newyork.craigslist.org] [owner] We buy cars and trucks any condition up to $3000 — $3,000
+2026-03-23 04:10:45,809 [INFO] [230/281] ✓ [newyork.craigslist.org] [dealer] 2018 Cadillac Escalade ESV 4WDPlatinum 4 WDPlatinum 4-WDPlatinum — $17,900
+2026-03-23 04:10:45,809 [INFO]   >> [newyork.craigslist.org] extended pause 5.4s
+2026-03-23 04:10:51,283 [INFO] [231/281] ✓ [newyork.craigslist.org] [dealer] 2019 BMW 7 Series 740i 740 i 740-i xDrive Sedan — $11,109
+2026-03-23 04:10:54,654 [INFO] [232/281] ✓ [newyork.craigslist.org] [owner] 2012 Toyota Sienna XLE with a lot of extra stuff — $5,700
+2026-03-23 04:10:56,696 [INFO] [233/281] ✓ [newyork.craigslist.org] [owner] 2002 GMC Sierra 2500HD Truck — $1,000
+2026-03-23 04:10:58,773 [INFO] [234/281] ✓ [newyork.craigslist.org] [owner] 1998 suburban LS 350 limited slip towing package — $4,500
+2026-03-23 04:11:01,900 [INFO] [235/281] ✓ [newyork.craigslist.org] [dealer] 2014 Chevrolet Camaro 2dr 2 dr 2-dr Cpe LT w2LT w 2 LT w-2-LT — $11,999
+2026-03-23 04:11:04,102 [INFO] [236/281] ✓ [newyork.craigslist.org] [owner] 2004 Jaguar X Type for parts — $725
+2026-03-23 04:11:07,077 [INFO] [237/281] ✓ [newyork.craigslist.org] [owner] ACURA MDX 2012 — $7,500
+2026-03-23 04:11:09,749 [INFO] [238/281] ✓ [newyork.craigslist.org] [owner] 2015 Chevy Spark 1LT – 56k Miles – Clean Title – BK, NYC — $6,200
+2026-03-23 04:11:12,347 [INFO] [239/281] ✓ [newyork.craigslist.org] [dealer] 2012 Mini Cooper 48k auto — $6,900
+2026-03-23 04:11:15,817 [INFO] [240/281] ✓ [newyork.craigslist.org] [dealer] 2013 Audi Q7 3.0T quattro S line Prestige AWD 4dr SUV — $7,500
+2026-03-23 04:11:15,817 [INFO]   >> [newyork.craigslist.org] extended pause 5.2s
+2026-03-23 04:11:21,112 [INFO] [241/281] ✓ [newyork.craigslist.org] [dealer] 2011 Ram 1500 SLT 4x4 4dr Quad Cab 6.3 ft. SB Pickup — $6,500
+2026-03-23 04:11:23,225 [INFO] [242/281] ✓ [newyork.craigslist.org] [dealer] 2014 Mercedes-Benz E Class E 350 Luxury 4MATIC AWD 4dr Sedan — $8,000
+2026-03-23 04:11:26,143 [INFO] [243/281] ✓ [newyork.craigslist.org] [dealer] 2012 Jeep Liberty Sport 4x4 4dr SUV — $5,400
+2026-03-23 04:11:29,214 [INFO] [244/281] ✓ [newyork.craigslist.org] [dealer] 2003 Saturn VUE Base AWD 4dr SUV — $2,500
+2026-03-23 04:11:31,802 [INFO] [245/281] ✓ [newyork.craigslist.org] [dealer] 2005 Lexus RX 330 Base AWD 4dr SUV — $7,500
+2026-03-23 04:11:34,110 [INFO] [246/281] ✓ [newyork.craigslist.org] [dealer] 2010 Nissan Murano SL AWD 4dr SUV — $8,500
+2026-03-23 04:11:36,581 [INFO] [247/281] ✓ [newyork.craigslist.org] [dealer] 2013 Dodge Dart SXT 4dr Sedan — $4,200
+2026-03-23 04:11:38,818 [INFO] [248/281] ✓ [newyork.craigslist.org] [dealer] 2011 Mercedes-Benz C Class C 300 Sport 4MATIC AWD 4dr Sedan — $5,900
+2026-03-23 04:11:41,040 [INFO] [249/281] ✓ [newyork.craigslist.org] [dealer] 2006 Jeep Liberty Renegade 4dr SUV 4WD — $3,500
+2026-03-23 04:11:44,166 [INFO] [250/281] ✓ [newyork.craigslist.org] [dealer] 2011 Toyota Prius Five 4dr Hatchback — $5,900
+2026-03-23 04:11:44,190 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (250 rows, 27 cols)
+2026-03-23 04:11:44,200 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (250 rows)
+2026-03-23 04:11:44,200 [INFO]   >> Checkpoint 250/281 | Clean: 250
+2026-03-23 04:11:44,200 [INFO]   >> [newyork.craigslist.org] extended pause 5.4s
+2026-03-23 04:11:49,626 [INFO] [251/281] ✓ [newyork.craigslist.org] [dealer] 2020 Ford Escape SE AWD — $10,500
+2026-03-23 04:11:51,976 [INFO] [252/281] ✓ [newyork.craigslist.org] [owner] Volkswagen beetle 1975 52k kilometers — $5,000
+2026-03-23 04:11:54,036 [INFO] [253/281] ✓ [newyork.craigslist.org] [owner] 2019 ACURA ILX — $15
+2026-03-23 04:11:56,174 [INFO] [254/281] ✓ [newyork.craigslist.org] [owner] Luxury truck — $3,500
+2026-03-23 04:11:58,480 [INFO] [255/281] ✓ [newyork.craigslist.org] [dealer] 2020 Maserati Ghibli S Q4 Q 4 Q-4 30L 30 L 30-L — $17,900
+2026-03-23 04:12:01,144 [INFO] [256/281] ✓ [newyork.craigslist.org] [owner] Ford Econoline 150 - Very Low <Miles, Excellent Mechanical condition — $5,900
+2026-03-23 04:12:04,490 [INFO] [257/281] ✓ [newyork.craigslist.org] [dealer] good tires Ford F-150 Roush Raptor — $29,950
+2026-03-23 04:12:07,251 [INFO] [258/281] ✓ [newyork.craigslist.org] [dealer] brand new Lexus LC 500 — $48,950
+2026-03-23 04:12:10,039 [INFO] [259/281] ✓ [newyork.craigslist.org] [dealer] $229/mo - 2011 Porsche Panamera HB 4S — $13,999
+2026-03-23 04:12:12,417 [INFO] [260/281] ✓ [newyork.craigslist.org] [dealer] 2013 Bentley Continental GT V8 V 8 V-8 2dr 2 dr 2-dr Conv — $85,000
+2026-03-23 04:12:12,417 [INFO]   >> [newyork.craigslist.org] extended pause 4.4s
+2026-03-23 04:12:17,085 [INFO] Primed sub-area: https://newyork.craigslist.org/wch/
+2026-03-23 04:12:17,121 [INFO] [261/281] ✓ [newyork.craigslist.org] [owner] 2016 Volvo VND13 Daycab — $15,000
+2026-03-23 04:12:20,245 [INFO] [262/281] ✓ [newyork.craigslist.org] [owner] 2012 Honda Accord runs and drives great — $3,900
+2026-03-23 04:12:22,957 [INFO] [263/281] ✓ [newyork.craigslist.org] [owner] Nissan versa 2017 with 70k miles — $2,500
+2026-03-23 04:12:25,234 [INFO] [264/281] ✓ [newyork.craigslist.org] [dealer] 2006 Volkswagen Passat — $4,395
+2026-03-23 04:12:27,441 [INFO] [265/281] ✓ [newyork.craigslist.org] [dealer] 2006 Toyota Sienna — $6,500
+2026-03-23 04:12:29,981 [INFO] [266/281] ✓ [newyork.craigslist.org] [dealer] 2006 Toyota Prius — $6,600
+2026-03-23 04:12:32,534 [INFO] [267/281] ✓ [newyork.craigslist.org] [dealer] 2005 Mercedes-Benz E Class — $4,600
+2026-03-23 04:12:35,012 [INFO] [268/281] ✓ [newyork.craigslist.org] [dealer] $192/mo - 2008 Mercedes-Benz SLClass SL Class SL-Class 2dr Roadster 55 — $11,777
+2026-03-23 04:12:38,296 [INFO] [269/281] ✓ [newyork.craigslist.org] [owner] Audi A4 2017 — $10,500
+2026-03-23 04:12:41,356 [INFO] [270/281] ✓ [newyork.craigslist.org] [dealer] $212/mo - 2013 Mercedes-Benz CLSClass CLS Class CLS-Class Sdn CLS 550 — $12,999
+2026-03-23 04:12:41,356 [INFO]   >> [newyork.craigslist.org] extended pause 5.3s
+2026-03-23 04:12:46,661 [INFO] [271/281] ✓ [newyork.craigslist.org] [owner] 2004 toyota corolla CE — $1,700
+2026-03-23 04:12:49,618 [INFO] [272/281] ✓ [newyork.craigslist.org] [owner] 2013 BMW 740 — $9,300
+2026-03-23 04:12:52,987 [INFO] [273/281] ✓ [newyork.craigslist.org] [dealer] 2008 Saab 9-3 2.0T 2dr Convertible — $4,600
+2026-03-23 04:12:55,714 [INFO] [274/281] ✓ [newyork.craigslist.org] [dealer] 2008 Hyundai Santa Fe GLS 4dr SUV — $3,600
+2026-03-23 04:12:58,195 [INFO] [275/281] ✓ [newyork.craigslist.org] [dealer] 2024 Alfa Romeo Stelvio Veloce — $33,995
+2026-03-23 04:12:58,222 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (275 rows, 27 cols)
+2026-03-23 04:12:58,234 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (275 rows)
+2026-03-23 04:12:58,234 [INFO]   >> Checkpoint 275/281 | Clean: 275
+2026-03-23 04:13:00,660 [INFO] [276/281] ✓ [newyork.craigslist.org] [owner] 2018 Honda Odyssey EXL For Sale 117K Original Miles! — $14,900
+2026-03-23 04:13:03,884 [INFO] [277/281] ✓ [newyork.craigslist.org] [dealer] 2021 Tesla Model Y Long Range — $399
+2026-03-23 04:13:06,313 [INFO] [278/281] ✓ [newyork.craigslist.org] [dealer] 2023 Mercedes-Benz CClass C Class C-Class C300 C 300 C-300 4MATIC 4 MA — $499
+2026-03-23 04:13:09,813 [INFO] [279/281] ✓ [newyork.craigslist.org] [owner] Jeep liberty 2009 with 80k — $2,900
+2026-03-23 04:13:13,170 [INFO] [280/281] ✓ [newyork.craigslist.org] [owner] CANT get FINANCED Due to your credit??? WE can help! — $500
+2026-03-23 04:13:13,171 [INFO]   >> [newyork.craigslist.org] extended pause 4.5s
+2026-03-23 04:13:17,752 [INFO] [281/281] ✓ [newyork.craigslist.org] [owner] 2005 Chrysler Pacifica Touring suv low miles clean — $2,950
+2026-03-23 04:13:20,693 [INFO]   >> Domain complete: newyork.craigslist.org
+2026-03-23 04:13:20,734 [INFO] CSV saved: FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv (281 rows, 27 cols)
+2026-03-23 04:13:20,745 [INFO] JSON saved: FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json (281 rows)
+2026-03-23 04:13:20,745 [INFO] ============================================================
+2026-03-23 04:13:20,745 [INFO] DONE in 0:04:36.113467
+2026-03-23 04:13:20,745 [INFO]   Run Date         : 2026-03-23
+2026-03-23 04:13:20,745 [INFO]   Total attempted  : 281
+2026-03-23 04:13:20,745 [INFO]   ✓ Saved          : 281
+2026-03-23 04:13:20,745 [INFO]       → Owner      : 159
+2026-03-23 04:13:20,745 [INFO]       → Dealer     : 122
+2026-03-23 04:13:20,746 [INFO]   ✗ Expired/gone   : 0
+2026-03-23 04:13:20,746 [INFO]   CSV              : FSBO/Craigslist/DATA/2026-03-23/CSV/craigslist_cars.csv
+2026-03-23 04:13:20,746 [INFO]   JSON             : FSBO/Craigslist/DATA/2026-03-23/JSON/craigslist_cars.json
+2026-03-23 04:13:20,746 [INFO] ============================================================
