@@ -251,7 +251,7 @@ def scrape_bracket_stubs(min_price, max_price, seen_pids):
     start    = 0
     base_url = (
         f"https://cnj.craigslist.org/search/edison-nj/cta"
-        f"?lat=40.519&lon=-74.397&search_distance=15"
+        f"?lat=40.519&lon=-74.397&postedToday=1&search_distance=100"
         f"&min_price={min_price}&max_price={max_price}"
     )
 
