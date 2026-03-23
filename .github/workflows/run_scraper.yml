@@ -51,7 +51,7 @@ jobs:
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           RUN_DATE:  ${{ env.RUN_DATE }}
-        run: python scraper.py
+        run: python scrapers/craigslist_scraper.py
 
       - name: Commit data to repo
         if: always()
