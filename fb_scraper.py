@@ -12,10 +12,12 @@ if not APIFY_API_TOKEN:
 
 RUN_DATE = os.environ.get("RUN_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
 
-# ✅ Consistent path
+
+# ✅ Correct consistent path matching the yml
 BASE_DATA_DIR = os.path.join("FSBO", "Facebook", "DATA", RUN_DATE)
 JSON_DIR      = os.path.join(BASE_DATA_DIR, "JSON")
 CSV_DIR       = os.path.join(BASE_DATA_DIR, "CSV")
+
 
 
 os.makedirs(JSON_DIR, exist_ok=True)
