@@ -16,7 +16,7 @@ os.makedirs(CSV_DIR,  exist_ok=True)
 os.makedirs(JSON_DIR, exist_ok=True)
 
 CONFIG = {
-    "BASE_URL":           "https://cnj.craigslist.org/search/edison-nj/cta?lat=40.519&lon=-74.397&search_distance=15",
+    "BASE_URL":           "https://cnj.craigslist.org/search/edison-nj/cta?lat=40.519&lon=-74.397&postedToday=1&search_distance=100",
     "OUTPUT_CSV":         os.path.join(CSV_DIR,  "craigslist_cars.csv"),
     "OUTPUT_JSON":        os.path.join(JSON_DIR, "craigslist_cars.json"),
     "CHECKPOINT_FILE":    os.path.join(BASE_DIR, "checkpoint.json"),
