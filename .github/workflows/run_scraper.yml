@@ -3,15 +3,13 @@ name: Run Craigslist Scraper
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 11 * * *'
-    - cron: '30 21 * * *'
+    - cron: '0 11 * * *'     # 7:00 AM EDT = 11:00 UTC
+    - cron: '30 21 * * *'    # 5:30 PM EDT = 21:30 UTC
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 180
-
-    # ✅ Required permission to push data back to repo
     permissions:
       contents: write
 
@@ -60,6 +58,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
           git add FSBO/
           git diff --staged --quiet || git commit -m "data: Craigslist ${{ env.RUN_DATE }} ${{ env.RUN_TIME }}"
           git push
@@ -89,7 +88,7 @@ jobs:
             "📅 Date: ${{ env.RUN_DATE }}\n"
             "⏰ Finished: ${{ env.RUN_TIME }}\n"
             f"🚗 Listings saved: {rows}\n"
-            "📂 Data committed to GitHub repo\n"
+            "📂 Data committed to GitHub\n"
             "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           )
           if token and chat_id:
