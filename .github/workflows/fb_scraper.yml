@@ -2,8 +2,8 @@ name: Facebook Marketplace Scraper
 
 on:
   schedule:
-    - cron: "30 8 * * *"  # Daily at 8:30 AM UTC (4:30 AM EDT) — 30 min after Craigslist
-  workflow_dispatch:        # Manual trigger from GitHub Actions tab
+   - cron: "30 12 * * *"
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -37,8 +37,10 @@ jobs:
 
       - name: Run Facebook scraper
         env:
-          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
-          RUN_DATE:        ${{ env.RUN_DATE }}
+          APIFY_API_TOKEN:    ${{ secrets.APIFY_API_TOKEN }}
+          RUN_DATE:           ${{ env.RUN_DATE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scrapers/fb_scraper.py
 
       - name: Upload CSV artifact
@@ -57,19 +59,32 @@ jobs:
           path: FSBO/Facebook/DATA/${{ env.RUN_DATE }}/JSON/
           retention-days: 30
 
+      - name: Notify Telegram — success
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="Markdown" \
+            -d text="✅ *Facebook Scraper Done*
+          📅 Date: ${{ env.RUN_DATE }}
+          🔗 [View Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
+      - name: Notify Telegram — failure
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="Markdown" \
+            -d text="❌ *Facebook Scraper FAILED*
+          📅 Date: ${{ env.RUN_DATE }}
+          🔗 [View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
       - name: Commit and push results
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # ✅ Stage files FIRST before pulling
           git add FSBO/Facebook/DATA/ || true
-
-          # Pull with merge — no rebase conflict
           git pull --no-rebase origin main || true
-
-          # Commit only if something changed
           git diff --cached --quiet || git commit -m "Facebook scrape: ${{ env.RUN_DATE }}"
-
           git push origin main || true
