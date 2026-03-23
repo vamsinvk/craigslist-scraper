@@ -1,51 +1,39 @@
-name: Run Facebook Marketplace Scraper
+name: Facebook Marketplace Scraper
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '5 11 * * *'     # 7:05 AM EDT = 11:05 UTC
-    - cron: '35 21 * * *'    # 5:35 PM EDT = 21:35 UTC
+    - cron: "30 8 * * *"  # Daily at 8:30 AM UTC (4:30 AM EDT) — 30 min after Craigslist
+  workflow_dispatch:        # Manual trigger from GitHub Actions tab
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-facebook-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-facebook-
+
       - name: Install dependencies
         run: pip install apify-client
 
       - name: Set run date
-        run: |
-          echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
-          echo "RUN_TIME=$(TZ='America/New_York' date +'%I:%M %p EDT')" >> $GITHUB_ENV
-
-      - name: Notify start
-        run: |
-          python - <<'EOF'
-          import urllib.request, urllib.parse
-          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
-          msg = (
-            "🚀 Facebook Scraper Started\n"
-            "📅 Date: ${{ env.RUN_DATE }}\n"
-            "⏰ Time: ${{ env.RUN_TIME }}\n"
-            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          )
-          if token and chat_id:
-            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
-            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
-          EOF
+        run: echo "RUN_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Run Facebook scraper
         env:
@@ -53,63 +41,35 @@ jobs:
           RUN_DATE:        ${{ env.RUN_DATE }}
         run: python scrapers/fb_scraper.py
 
-      - name: Commit data to repo
+      - name: Upload CSV artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: facebook-csv-${{ env.RUN_DATE }}
+          path: FSBO/Facebook/DATA/${{ env.RUN_DATE }}/CSV/
+          retention-days: 30
+
+      - name: Upload JSON artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: facebook-json-${{ env.RUN_DATE }}
+          path: FSBO/Facebook/DATA/${{ env.RUN_DATE }}/JSON/
+          retention-days: 30
+
+      - name: Commit and push results
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
-          git add FSBO/
-          git diff --staged --quiet || git commit -m "data: Facebook ${{ env.RUN_DATE }} ${{ env.RUN_TIME }}"
-          git push
 
-      - name: Upload artifact backup
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: facebook-${{ env.RUN_DATE }}
-          path: |
-            FSBO/Facebook/DATA/${{ env.RUN_DATE }}/CSV/
-            FSBO/Facebook/DATA/${{ env.RUN_DATE }}/JSON/
-          retention-days: 90
+          # ✅ Stage files FIRST before pulling
+          git add FSBO/Facebook/DATA/ || true
 
-      - name: Notify success
-        if: success()
-        run: |
-          python - <<'EOF'
-          import urllib.request, urllib.parse, os
-          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
-          f = "FSBO/Facebook/DATA/${{ env.RUN_DATE }}/CSV/edison_processed_final_database.csv"
-          rows = sum(1 for _ in open(f)) - 1 if os.path.exists(f) else 0
-          msg = (
-            "✅ Facebook Scraper Done!\n"
-            "📅 Date: ${{ env.RUN_DATE }}\n"
-            "⏰ Finished: ${{ env.RUN_TIME }}\n"
-            f"🚗 Total listings in DB: {rows}\n"
-            "📂 Data committed to GitHub\n"
-            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          )
-          if token and chat_id:
-            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
-            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
-          EOF
+          # Pull with merge — no rebase conflict
+          git pull --no-rebase origin main || true
 
-      - name: Notify failure
-        if: failure()
-        run: |
-          python - <<'EOF'
-          import urllib.request, urllib.parse
-          token   = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
-          msg = (
-            "❌ Facebook Scraper FAILED!\n"
-            "📅 Date: ${{ env.RUN_DATE }}\n"
-            "⏰ Time: ${{ env.RUN_TIME }}\n"
-            "⚠️ Check logs!\n"
-            "🔗 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          )
-          if token and chat_id:
-            data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
-            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data)
-          EOF
+          # Commit only if something changed
+          git diff --cached --quiet || git commit -m "Facebook scrape: ${{ env.RUN_DATE }}"
+
+          git push origin main || true
