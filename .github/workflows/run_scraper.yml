@@ -39,7 +39,7 @@ jobs:
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           RUN_DATE:  ${{ env.RUN_DATE }}
-        run: python scrapers/Craigslist_scraper.py
+        run: python scrapers/craigslist_scraper.py
 
       - name: Upload CSV artifact
         if: always()
