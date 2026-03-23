@@ -1,14 +1,3 @@
-# ============================================================
-# Craigslist Car Scraper — Complete Final Version
-# - Domain-parallel (1 worker per domain, human-pace per domain)
-# - Thread-local sessions (no cookie race conditions)
-# - Sub-area priming (/brk/, /lgi/, /wch/ etc.)
-# - listing_type: owner vs dealer
-# - Smart 403 detection (expired vs real block)
-# - Checkpoint + retry on failure
-# - Date-partitioned output: FSBO/Craigslist/DATA/YYYY-MM-DD/CSV|JSON
-# ============================================================
-
 import requests
 from bs4 import BeautifulSoup
 import json, csv, time, os, re, sys, logging, random, threading
@@ -17,20 +6,14 @@ from urllib.parse import urlparse
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# ─────────────────────────────────────────────────────────────
-# DATE-PARTITIONED PATHS
-# ─────────────────────────────────────────────────────────────
-RUN_DATE   = os.environ.get("RUN_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
-BASE_DIR   = os.path.join("FSBO", "Craigslist", "DATA", RUN_DATE)
-CSV_DIR    = os.path.join(BASE_DIR, "CSV")
-JSON_DIR   = os.path.join(BASE_DIR, "JSON")
+RUN_DATE  = os.environ.get("RUN_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
+BASE_DIR  = os.path.join("FSBO", "Craigslist", "DATA", RUN_DATE)
+CSV_DIR   = os.path.join(BASE_DIR, "CSV")
+JSON_DIR  = os.path.join(BASE_DIR, "JSON")
 
 os.makedirs(CSV_DIR,  exist_ok=True)
 os.makedirs(JSON_DIR, exist_ok=True)
 
-# ─────────────────────────────────────────────────────────────
-# CONFIG
-# ─────────────────────────────────────────────────────────────
 CONFIG = {
     "BASE_URL":           "https://cnj.craigslist.org/search/edison-nj/cta?lat=40.5385&lon=-74.3959&postedToday=1&search_distance=90",
     "OUTPUT_CSV":         os.path.join(CSV_DIR,  "craigslist_cars.csv"),
@@ -45,6 +28,9 @@ CONFIG = {
     "STORM_THRESHOLD":    4,
     "COOLDOWN_SECONDS":   120,
 }
+
+
+
 
 IRRELEVANT_DOMAINS = {
     "chicago.craigslist.org",
@@ -527,21 +513,31 @@ def save_checkpoint(data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
+KEEP_COLUMNS = [
+    "run_date", "pid", "url", "domain", "listing_type",
+    "title", "price", "year", "make", "type",
+    "odometer", "title_status", "condition", "cylinders",
+    "fuel", "transmission", "drive", "paint_color",
+    "location", "latitude", "longitude",
+    "posted_time", "updated_time", "image_count",
+    "description", "image_urls","vin",
+]
+
+DROP_COLUMNS = {  "post_id","est._monthly_pmt"}
+
 def save_csv(data):
     if not data:
         return
-    all_keys, seen_keys = [], set()
+    all_keys = set()
     for row in data:
-        for k in row.keys():
-            if k not in seen_keys:
-                all_keys.append(k)
-                seen_keys.add(k)
+        all_keys.update(row.keys())
+    final_headers  = [c for c in KEEP_COLUMNS if c in all_keys]
+    final_headers += sorted([k for k in all_keys if k not in KEEP_COLUMNS and k not in DROP_COLUMNS])
     with open(CONFIG["OUTPUT_CSV"], "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=all_keys, extrasaction="ignore")
+        writer = csv.DictWriter(f, fieldnames=final_headers, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(data)
-    log.info(f"CSV saved: {CONFIG['OUTPUT_CSV']} ({len(data)} rows)")
-
+    log.info(f"CSV saved: {CONFIG['OUTPUT_CSV']} ({len(data)} rows, {len(final_headers)} cols)")
 
 def save_json(data):
     if not data:
@@ -549,6 +545,7 @@ def save_json(data):
     with open(CONFIG["OUTPUT_JSON"], "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     log.info(f"JSON saved: {CONFIG['OUTPUT_JSON']} ({len(data)} rows)")
+
 
 
 # ─────────────────────────────────────────────────────────────
