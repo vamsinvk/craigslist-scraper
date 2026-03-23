@@ -1,9 +1,10 @@
 import json
 import os
-import time
 import csv
+import threading
 from apify_client import ApifyClient
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- CONFIGURATION ---
 APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN", "")
@@ -12,13 +13,9 @@ if not APIFY_API_TOKEN:
 
 RUN_DATE = os.environ.get("RUN_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
 
-
-# ✅ Correct consistent path matching the yml
-BASE_DATA_DIR = os.path.join("FSBO", "Facebook", "DATA", RUN_DATE)
-JSON_DIR      = os.path.join(BASE_DATA_DIR, "JSON")
-CSV_DIR       = os.path.join(BASE_DATA_DIR, "CSV")
-
-
+BASE_DATA_DIR      = os.path.join("FSBO", "Facebook", "DATA", RUN_DATE)
+JSON_DIR           = os.path.join(BASE_DATA_DIR, "JSON")
+CSV_DIR            = os.path.join(BASE_DATA_DIR, "CSV")
 
 os.makedirs(JSON_DIR, exist_ok=True)
 os.makedirs(CSV_DIR,  exist_ok=True)
@@ -26,10 +23,10 @@ os.makedirs(CSV_DIR,  exist_ok=True)
 DATABASE_JSON_PATH = os.path.join(JSON_DIR, "edison_processed_final_database.json")
 DATABASE_CSV_PATH  = os.path.join(CSV_DIR,  "edison_processed_final_database.csv")
 
-client = ApifyClient(APIFY_API_TOKEN)
-
-# Micro-Brackets to completely bypass Facebook's 500-car search limit
-price_brackets = [
+# ─────────────────────────────────────────────────────────────
+# PRICE BRACKETS
+# ─────────────────────────────────────────────────────────────
+PRICE_BRACKETS = [
     {"min": 0,     "max": 2000},
     {"min": 2001,  "max": 5000},
     {"min": 5001,  "max": 10000},
@@ -38,20 +35,27 @@ price_brackets = [
     {"min": 25001, "max": 100000},
 ]
 
-# Load existing JSON database to track history across multiple days
+# ─────────────────────────────────────────────────────────────
+# LOAD EXISTING DATABASE
+# ─────────────────────────────────────────────────────────────
 if os.path.exists(DATABASE_JSON_PATH):
     with open(DATABASE_JSON_PATH, "r", encoding="utf-8") as f:
         master_db = json.load(f)
     print(f"Loaded existing database: {len(master_db)} records.")
 else:
     master_db = {}
-    print("No existing database found. Starting fresh.")
+    print("No existing database. Starting fresh.")
 
+# Shared state — protected by db_lock
+db_lock        = threading.Lock()
 new_cars_added = 0
 prices_updated = 0
 spam_blocked   = 0
 current_date   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+# ─────────────────────────────────────────────────────────────
+# COLUMNS
+# ─────────────────────────────────────────────────────────────
 COLUMNS_TO_DROP = [
     "is_sold", "is_pending", "is_live",
     "__isMarketplaceListingRenderable", "__isMarketplaceListingWithChildListings",
@@ -85,15 +89,22 @@ DEALER_KEYWORDS = [
     "dealership", "dealer", "bhph", "doc fee", "otd pricing",
 ]
 
-print(f"\nStarting Master Daily Scrape — {RUN_DATE} (Last 24 Hours)...")
+# ─────────────────────────────────────────────────────────────
+# BRACKET WORKER — runs in parallel
+# ─────────────────────────────────────────────────────────────
+def scrape_bracket(bracket):
+    global new_cars_added, prices_updated, spam_blocked
 
-for bracket in price_brackets:
-    print(f"\n--- Scraping bracket: ${bracket['min']} to ${bracket['max']} ---")
+    # Each thread gets its own client instance
+    client = ApifyClient(APIFY_API_TOKEN)
+
+    label = f"${bracket['min']}–${bracket['max']}"
+    print(f"  ▶ Started  {label}")
 
     run_input = {
         "discordNotifyOnlyNew":  True,
         "enableDeduplication":   False,
-        "fetchDetailedItems":    True,
+        "fetchDetailedItems":    True,    # ✅ Full detailed data
         "location":              "edison",
         "radius":                "40000",
         "maxListingAge":         "86400",
@@ -101,9 +112,9 @@ for bracket in price_brackets:
         "priceMin":              bracket["min"],
         "priceMax":              bracket["max"],
         "proxy": {
-            "useApifyProxy":      True,
-            "apifyProxyGroups":   ["RESIDENTIAL"],
-            "apifyProxyCountry":  "US",
+            "useApifyProxy":     True,
+            "apifyProxyGroups":  ["RESIDENTIAL"],
+            "apifyProxyCountry": "US",
         },
         "sortBy": "creation_time_descend",
     }
@@ -111,11 +122,13 @@ for bracket in price_brackets:
     try:
         run = client.actor("raidr-api/facebook-marketplace-vehicle-scraper").call(
             run_input=run_input,
-            memory_mbytes=1024,
+            memory_mbytes=512,            # ✅ Reduced from 1024 → 512
         )
 
         dataset_items = client.dataset(run["defaultDatasetId"]).list_items().items
-        print(f"Extracted {len(dataset_items)} raw listings. Processing...")
+        print(f"  ✓ Done     {label} → {len(dataset_items)} listings")
+
+        local_new = local_updated = local_spam = 0
 
         for item in dataset_items:
             car_data = item.get("extraListingData") or item
@@ -124,12 +137,12 @@ for bracket in price_brackets:
             if not car_id:
                 continue
 
-            current_price            = car_data.get("price")
-            car_data["contact_url"]  = car_data.get("share_uri", f"https://www.facebook.com/marketplace/item/{car_id}")
+            current_price              = car_data.get("price")
+            car_data["contact_url"]    = car_data.get("share_uri", f"https://www.facebook.com/marketplace/item/{car_id}")
             car_data["last_seen_date"] = current_date
-            car_data["run_date"]     = RUN_DATE
+            car_data["run_date"]       = RUN_DATE
 
-            # 1. COMBINE STATUS COLUMNS
+            # Status
             if car_data.get("is_sold"):
                 car_data["status"] = "sold"
             elif car_data.get("is_pending"):
@@ -137,38 +150,67 @@ for bracket in price_brackets:
             else:
                 car_data["status"] = "live"
 
-            # 2. DROP USELESS COLUMNS
+            # Drop columns
             for col in COLUMNS_TO_DROP:
                 car_data.pop(col, None)
 
-            # 3. DEALER FILTER
-            raw_desc  = str(car_data.get("description", ""))
+            # Dealer filter
+            raw_desc   = str(car_data.get("description", ""))
             desc_lower = raw_desc.lower()
             car_data["is_likely_dealer"] = any(kw in desc_lower for kw in DEALER_KEYWORDS)
 
-            # 4. SPAM BLOCKER — deduplicate by description
+            # Dedup key
             clean_desc = raw_desc.strip()
             dedup_key  = clean_desc if len(clean_desc) > 10 else str(car_id)
 
-            if dedup_key in master_db:
-                old_price = master_db[dedup_key].get("price")
-                if str(old_price) != str(current_price):
-                    print(f"  💰 Price change! {car_data.get('title')}: ${old_price} → ${current_price}")
-                    master_db[dedup_key]["price"]          = current_price
-                    master_db[dedup_key]["last_seen_date"] = current_date
-                    prices_updated += 1
+            # Thread-safe write
+            with db_lock:
+                if dedup_key in master_db:
+                    old_price = master_db[dedup_key].get("price")
+                    if str(old_price) != str(current_price):
+                        print(f"  💰 {car_data.get('title')}: ${old_price} → ${current_price}")
+                        master_db[dedup_key]["price"]          = current_price
+                        master_db[dedup_key]["last_seen_date"] = current_date
+                        local_updated += 1
+                    else:
+                        local_spam += 1
                 else:
-                    spam_blocked += 1
-            else:
-                car_data["first_seen_date"] = current_date
-                master_db[dedup_key]        = car_data
-                new_cars_added += 1
+                    car_data["first_seen_date"] = current_date
+                    master_db[dedup_key]        = car_data
+                    local_new += 1
+
+        with db_lock:
+            new_cars_added += local_new
+            prices_updated += local_updated
+            spam_blocked   += local_spam
+
+        return {"label": label, "count": len(dataset_items), "error": None}
 
     except Exception as e:
-        print(f"⚠️  Error in bracket ${bracket['min']}–${bracket['max']}: {e}")
+        print(f"  ❌ Failed  {label}: {e}")
+        return {"label": label, "count": 0, "error": str(e)}
 
-    print("Cooling down 15 seconds...")
-    time.sleep(15)
+
+# ─────────────────────────────────────────────────────────────
+# MAIN — PARALLEL EXECUTION
+# ─────────────────────────────────────────────────────────────
+print(f"\n{'='*50}")
+print(f"  Facebook Scraper — Parallel Edition")
+print(f"  Run Date : {RUN_DATE}")
+print(f"  Brackets : {len(PRICE_BRACKETS)} running simultaneously")
+print(f"  RAM/actor: 512 MB")
+print(f"{'='*50}\n")
+
+start_time = datetime.now()
+
+with ThreadPoolExecutor(max_workers=len(PRICE_BRACKETS)) as executor:
+    futures = {executor.submit(scrape_bracket, b): b for b in PRICE_BRACKETS}
+    for future in as_completed(futures):
+        result = future.result()
+        if result["error"]:
+            print(f"  ⚠️  {result['label']} failed: {result['error']}")
+
+elapsed = datetime.now() - start_time
 
 # --- SAVE TO JSON ---
 with open(DATABASE_JSON_PATH, "w", encoding="utf-8") as f:
@@ -184,23 +226,29 @@ if master_db:
                 all_keys.append(k)
                 seen_keys.add(k)
 
-    priority_headers = ["status", "title", "price", "is_likely_dealer",
-                        "contact_url", "run_date", "first_seen_date", "last_seen_date", "id"]
-    final_headers    = priority_headers + [h for h in all_keys if h not in priority_headers]
+    priority_headers = [
+        "status", "title", "price", "is_likely_dealer",
+        "contact_url", "run_date", "first_seen_date", "last_seen_date", "id",
+    ]
+    final_headers = priority_headers + [h for h in all_keys if h not in priority_headers]
 
     with open(DATABASE_CSV_PATH, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=final_headers, extrasaction="ignore")
         writer.writeheader()
         for car in master_db.values():
-            clean_row = {k: (str(v) if isinstance(v, (list, dict)) else v) for k, v in car.items()}
+            clean_row = {
+                k: (str(v) if isinstance(v, (list, dict)) else v)
+                for k, v in car.items()
+            }
             writer.writerow(clean_row)
 
     print(f"✅ CSV saved: {DATABASE_CSV_PATH}")
 
-# --- RUN SUMMARY ---
+# --- SUMMARY ---
 print(f"""
 {'='*50}
   Run Date    : {RUN_DATE}
+  ⏱  Elapsed  : {elapsed}
   Total in DB : {len(master_db)}
   New today   : {new_cars_added}
   Price drops : {prices_updated}
