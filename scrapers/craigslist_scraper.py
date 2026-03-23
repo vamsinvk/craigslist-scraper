@@ -1,12 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
 import json, csv, time, os, re, sys, logging, random, threading
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-RUN_DATE  = os.environ.get("RUN_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
+# ✅ Fixed deprecation warning
+RUN_DATE  = os.environ.get("RUN_DATE", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
 BASE_DIR  = os.path.join("FSBO", "Craigslist", "DATA", RUN_DATE)
 CSV_DIR   = os.path.join(BASE_DIR, "CSV")
 JSON_DIR  = os.path.join(BASE_DIR, "JSON")
@@ -15,11 +16,11 @@ os.makedirs(CSV_DIR,  exist_ok=True)
 os.makedirs(JSON_DIR, exist_ok=True)
 
 CONFIG = {
-    "BASE_URL":           "https://cnj.craigslist.org/search/edison-nj/cta?lat=40.5385&lon=-74.3959&postedToday=1&search_distance=90",
+    "BASE_URL":           "https://cnj.craigslist.org/search/edison-nj/cta?lat=40.519&lon=-74.397&search_distance=15",
     "OUTPUT_CSV":         os.path.join(CSV_DIR,  "craigslist_cars.csv"),
     "OUTPUT_JSON":        os.path.join(JSON_DIR, "craigslist_cars.json"),
     "CHECKPOINT_FILE":    os.path.join(BASE_DIR, "checkpoint.json"),
-    "LOG_FILE":           os.path.join(BASE_DIR, "craper.log"),
+    "LOG_FILE":           os.path.join(BASE_DIR, "scraper.log"),
     "DELAY_MIN":          2.0,
     "DELAY_MAX":          3.5,
     "PAGE_DELAY":         1.2,
@@ -27,10 +28,37 @@ CONFIG = {
     "MAX_DOMAIN_WORKERS": 8,
     "STORM_THRESHOLD":    4,
     "COOLDOWN_SECONDS":   120,
+    "OVERFLOW_WARN":      1217,   # warn if bracket has more than this
 }
 
-
-
+# ─────────────────────────────────────────────────────────────
+# PRICE BRACKETS — each kept under 270 to avoid 312 cap
+# Tight in the $3k–$10k peak zone based on histogram
+# ─────────────────────────────────────────────────────────────
+SEARCH_BRACKETS = [
+    (0,      1000),
+    (1001,   2000),
+    (2001,   3000),
+    # ⚡ Peak zone — very tight
+    (3001,   3700),
+    (3701,   4300),
+    (4301,   4800),
+    (4801,   5300),
+    (5301,   5900),
+    (5901,   6500),
+    (6501,   7200),
+    (7201,   8000),
+    (8001,   9000),
+    (9001,   10000),
+    # Medium density
+    (10001,  12000),
+    (12001,  14500),
+    (14501,  17500),
+    (17501,  22000),
+    # Low tail
+    (22001,  35000),
+    (35001,  999999),
+]
 
 IRRELEVANT_DOMAINS = {
     "chicago.craigslist.org",
@@ -143,7 +171,6 @@ def prime_domain(url, session=None):
     except:
         return
 
-    # Check inside lock but do HTTP outside to avoid blocking all threads
     with _prime_lock:
         need_root = root not in _primed_domains
         if need_root:
@@ -217,35 +244,38 @@ def probe_domain(domain):
         return False
 
 # ─────────────────────────────────────────────────────────────
-# PHASE 1 — Collect stub URLs from search pages
+# PHASE 1 — Price bracket stub collection
 # ─────────────────────────────────────────────────────────────
-def scrape_search_stubs():
-    stubs     = []
-    seen_pids = set()
-    start     = 0
-    total     = 9999
-
-    main_session = get_session()
-    prime_domain(CONFIG["BASE_URL"], main_session)
+def scrape_bracket_stubs(min_price, max_price, seen_pids):
+    stubs    = []
+    start    = 0
+    base_url = (
+        f"https://cnj.craigslist.org/search/edison-nj/cta"
+        f"?lat=40.519&lon=-74.397&search_distance=15"
+        f"&min_price={min_price}&max_price={max_price}"
+    )
 
     while True:
-        url  = build_page_url(CONFIG["BASE_URL"], start)
-        log.info(f"[Search] s={start}")
+        url  = build_page_url(base_url, start)
         resp = safe_get(url)
         if not resp:
-            log.error(f"Failed to load search page s={start}")
+            log.error(f"  Failed: ${min_price}-${max_price} s={start}")
             break
 
+        # ✅ Overflow check on first page
         if start == 0:
             m = re.search(r'"numberOfItems"\s*:\s*(\d+)', resp.text)
-            if m:
-                total = int(m.group(1))
-                log.info(f"Total reported by Craigslist: {total}")
+            bracket_total = int(m.group(1)) if m else 0
+            log.info(f"  [${min_price}–${max_price}] Total in bracket: {bracket_total}")
+            if bracket_total > CONFIG["OVERFLOW_WARN"]:
+                log.warning(
+                    f"  ⚠️  SPLIT THIS BRACKET — "
+                    f"${min_price}–${max_price} has {bracket_total} listings!"
+                )
 
         soup  = BeautifulSoup(resp.text, "html.parser")
         cards = soup.select("li.cl-static-search-result") or soup.select("li.result-row")
         if not cards:
-            log.info("No listing cards found — search pages done.")
             break
 
         new = 0
@@ -291,15 +321,44 @@ def scrape_search_stubs():
                 "listing_type": listing_type,
             })
 
-        log.info(f"  s={start} | {new} new | Total stubs: {len(stubs)}")
+        log.info(f"    s={start} | {new} new | bracket total: {len(stubs)}")
 
-        if new == 0 or len(stubs) >= total:
+        if new == 0:
             break
 
-        start += 120
+        start += 16
         time.sleep(CONFIG["PAGE_DELAY"] + random.uniform(0, 0.6))
 
     return stubs
+
+
+def scrape_search_stubs():
+    # ✅ Clear stale checkpoint so old PIDs don't block new brackets
+    if os.path.exists(CONFIG["CHECKPOINT_FILE"]):
+        os.remove(CONFIG["CHECKPOINT_FILE"])
+        log.info("Cleared stale checkpoint.")
+
+    all_stubs = []
+    seen_pids = set()
+
+    main_session = get_session()
+    prime_domain(CONFIG["BASE_URL"], main_session)
+
+    log.info(f"Running {len(SEARCH_BRACKETS)} price brackets:")
+    for mn, mx in SEARCH_BRACKETS:
+        log.info(f"   ${mn:>6} – ${mx}")
+
+    for min_price, max_price in SEARCH_BRACKETS:
+        bracket_stubs = scrape_bracket_stubs(min_price, max_price, seen_pids)
+        all_stubs.extend(bracket_stubs)
+        log.info(
+            f"  ✓ Bracket ${min_price}–${max_price}: "
+            f"{len(bracket_stubs)} listings | Running total: {len(all_stubs)}"
+        )
+        time.sleep(random.uniform(1.5, 2.5))
+
+    log.info(f"Phase 1 complete — {len(all_stubs)} total unique listings")
+    return all_stubs
 
 # ─────────────────────────────────────────────────────────────
 # PHASE 2 — Parse detail page HTML
@@ -376,9 +435,8 @@ def scrape_detail(stub):
             post_id = re.sub(r"[^\d]", "", t)
             break
 
-    # Safe merge: parsed attrs never overwrite core stub fields
-    core_keys = {"run_date", "pid", "url", "title", "price", "location", "domain", "listing_type"}
-    raw_attrs = parse_attrs_html(soup)
+    core_keys  = {"run_date", "pid", "url", "title", "price", "location", "domain", "listing_type"}
+    raw_attrs  = parse_attrs_html(soup)
     safe_attrs = {
         (f"attr_{k}" if k in core_keys else k): v
         for k, v in raw_attrs.items()
@@ -431,12 +489,11 @@ def scrape_domain_batch(domain, stubs, total_all):
         else:
             consecutive_403 = 0
 
-        # Snapshot data outside lock to avoid blocking threads during disk I/O
         with results_lock:
             all_results.append(detail)
             done_count += 1
-            current     = done_count
-            status      = "✓" if not failed else "✗ expired"
+            current = done_count
+            status  = "✓" if not failed else "✗ expired"
             log.info(
                 f"[{current}/{total_all}] {status} [{domain}] "
                 f"[{stub.get('listing_type','?')}] "
@@ -515,15 +572,16 @@ def save_checkpoint(data):
 
 KEEP_COLUMNS = [
     "run_date", "pid", "url", "domain", "listing_type",
-    "title", "price", "year", "make", "type",
+    "title", "price", "year", "make", "model", "type",
     "odometer", "title_status", "condition", "cylinders",
-    "fuel", "transmission", "drive", "paint_color",
+    "fuel", "transmission", "drive", "paint_color", "vin",
     "location", "latitude", "longitude",
     "posted_time", "updated_time", "image_count",
-    "description", "image_urls","vin",
+    "description", "image_urls",
 ]
 
-DROP_COLUMNS = {  "post_id","est._monthly_pmt"}
+DROP_COLUMNS = {"post_id", "est._monthly_pmt"}
+
 
 def save_csv(data):
     if not data:
@@ -539,13 +597,13 @@ def save_csv(data):
         writer.writerows(data)
     log.info(f"CSV saved: {CONFIG['OUTPUT_CSV']} ({len(data)} rows, {len(final_headers)} cols)")
 
+
 def save_json(data):
     if not data:
         return
     with open(CONFIG["OUTPUT_JSON"], "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     log.info(f"JSON saved: {CONFIG['OUTPUT_JSON']} ({len(data)} rows)")
-
 
 
 # ─────────────────────────────────────────────────────────────
@@ -561,18 +619,12 @@ if __name__ == "__main__":
     log.info(f"Start    : {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     log.info("=" * 60)
 
-    completed      = load_checkpoint()
-    completed_pids = {r["pid"] for r in completed}
-    all_results.extend(completed)
-    done_count = len(completed)
-
     log.info("PHASE 1: Collecting listing URLs from search pages...")
-    stubs     = scrape_search_stubs()
-    remaining = [s for s in stubs if s["pid"] not in completed_pids]
-    log.info(f"Total: {len(stubs)} | Already done: {len(completed)} | Remaining: {len(remaining)}")
+    stubs = scrape_search_stubs()
+    log.info(f"Total: {len(stubs)} | Remaining: {len(stubs)}")
 
     log.info("PHASE 2: Domain-parallel detail scraping...")
-    scrape_domain_parallel(remaining)
+    scrape_domain_parallel(stubs)
 
     # Retry all failed listings once
     failed_stubs = [r for r in all_results if "error" in r]
